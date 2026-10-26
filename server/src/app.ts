@@ -5,6 +5,8 @@ import { profileRouter } from './routes/profile';
 import { settingsRouter } from './routes/settings';
 import { materialsRouter } from './routes/materials';
 import { aiRouter } from './routes/ai';
+import { jdsRouter } from './routes/jds';
+import { keywordsRouter } from './routes/keywords';
 
 export function buildApp(db: DatabaseSync): Express {
   const app = express();
@@ -14,6 +16,8 @@ export function buildApp(db: DatabaseSync): Express {
   app.use('/api/settings', settingsRouter(db));
   app.use('/api/materials', materialsRouter(db));
   app.use('/api/ai', aiRouter(db));
+  app.use('/api/jds', jdsRouter(db));
+  app.use('/api/keywords', keywordsRouter(db));
   app.use('/api', (_req: Request, res: Response) => fail(res, 404, '接口不存在'));
   return app;
 }
