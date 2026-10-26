@@ -11,3 +11,7 @@ export interface ProfileVersionSnap { heading: string; bullets: string[] }
 export interface ProfileVersion {
   id: number; item_id: number; snapshot: ProfileVersionSnap; trigger: string; created_at: string;
 }
+export interface Material { id: number; title: string; content: string; tags: string[]; source: string; created_at: string; updated_at: string }
+export interface Jd { id: number; company: string; title: string; raw_text: string; summary: { requirements: string[]; responsibilities: string[] }; analyzed: number; status: string; created_at: string }
+export interface Keyword { id: number; term: string; category: string; note: string; totalFrequency: number; jdCount: number }
+export const CAT_LABELS: Record<string, string> = { hard_skill: '硬技能', soft_skill: '软素质', business: '业务词' };

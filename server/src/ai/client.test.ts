@@ -38,7 +38,10 @@ describe('chat', () => {
   });
   it('401 中文错误', async () => {
     mockFetch([{ status: 401, body: {} }]);
-    await expect(chat({ baseUrl: 'https://x.test', apiKey: 'k', model: 'm', temperature: 0.7 }, [])).rejects.toThrow(AIError, 'API Key 无效或已过期');
+    const cfg = { baseUrl: 'https://x.test', apiKey: 'k', model: 'm', temperature: 0.7 };
+    const err = await chat(cfg, []).then(() => null).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(AIError);
+    expect((err as Error).message).toContain('API Key 无效或已过期');
   });
   it('网络错误中文提示', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('fetch failed'); }));

@@ -19,3 +19,13 @@ button.danger { color: #c0392b; }
 .versions { border-top: 1px dashed #ccd; margin-top: 10px; padding-top: 8px; }
 .ver { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f1f1f1; font-size: 14px; }
 .placeholder-page { background: #fff; border: 1px dashed #ccd; border-radius: 10px; padding: 40px; text-align: center; color: #666; }
+.modal label { display: block; margin: 8px 0; font-size: 14px; }
+.modal label input { display: block; width: 100%; margin-top: 2px; box-sizing: border-box; }
+.modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.modal { background: #fff; border-radius: 12px; padding: 20px; width: 560px; max-width: 92vw; }
+.topnav .wide { flex: 1; }
+.tag { background: #eef2ff; color: #3b6ef6; border-radius: 6px; padding: 2px 8px; font-size: 12px; margin-left: 4px; }
+.mat-content { white-space: pre-wrap; color: #444; font-size: 14px; margin: 6px 0; }
+.kw-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.kw-table th, .kw-table td { border-bottom: 1px solid #eee; padding: 6px 8px; text-align: left; }
+.jd-detail p { margin: 4px 0; font-size: 14px; }
