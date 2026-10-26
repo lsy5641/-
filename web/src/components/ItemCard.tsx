@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProfileItem } from '../types';
 import { api } from '../api';
 import VersionsDrawer from './VersionsDrawer';
@@ -11,6 +11,12 @@ export default function ItemCard({ item, onChanged, onError }: {
   const [bullets, setBullets] = useState<string[]>(item.bullets.length ? item.bullets : ['']);
   const [saving, setSaving] = useState(false);
   const [showVersions, setShowVersions] = useState(false);
+
+  useEffect(() => {
+    setHeading(item.heading);
+    setPeriod(item.period);
+    setBullets(item.bullets.length ? item.bullets : ['']);
+  }, [item]);
 
   async function save() {
     setSaving(true);

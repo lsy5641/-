@@ -1,0 +1,50 @@
+# JobCoach 求职助手（本地版）
+
+一份"终身履历" + 每个岗位 JD 一键衍生定制简历 + AI 教练（STAR 改写）+ 备考中心（学习计划/面试预测题）。
+
+当前进度：**M1+M2 完成**（个人履历 + 版本回退可用），JD 工作台/备考中心/AI 功能在后续里程碑上线。
+
+## 三步开始使用（需要电脑已联网）
+
+1. 确认装了 Node.js：命令行输入 `node --version` 有版本号即可（没有就去 https://nodejs.org/zh-cn 装 LTS 版）
+2. 打开终端（PowerShell），进入本项目文件夹：`cd C:\vagent-workspace\jobcoach`
+3. 首次使用先装依赖：`npm install`；以后每次使用只需：
+
+```
+npm run dev
+```
+
+然后浏览器打开 **http://localhost:5173** 即可使用。
+
+- 停止：在运行终端按 `Ctrl+C`
+- 你的所有数据存在 `data/jobcoach.db` 这一个文件里，复制它就是完整备份
+- `npm test` 可随时重跑所有自动化测试（当前 13 个）
+
+## 常见报错对照表
+
+| 现象 | 原因与解决 |
+|---|---|
+| `node 不是内部或外部命令` | Node 未安装或装完没重开终端 → 装/重开 |
+| `EADDRINUSE: port 3001/5173` | 上一次没退干净 → 关掉重复的终端窗口，或重启电脑 |
+| 浏览器打不开 localhost:5173 | dev 没起来 → 看终端有没有红字报错 |
+| 启动/测试出现 `ExperimentalWarning: SQLite` | Node 内置数据库的正常提示，可忽略 |
+| `npm install` 网络失败 | 挂代理，或 `npm config set registry https://registry.npmmirror.com` 重试，成功后 `npm config delete registry` 换回 |
+
+## 安全提醒
+
+- 项目目录里 `data/` 含你的个人信息与 AI 配置，**不要上传网盘共享或发给别人**
+- AI 功能的 API Key 只存本机，后续接入 AI 设置页后请妥善保管
+
+## 里程碑路线图
+
+| 状态 | 内容 |
+|---|---|
+| ✅ M1 | 全栈骨架：一条命令启动 |
+| ✅ M2 | 个人履历：增删改 + 每次保存留版本 + 一键恢复 |
+| ⬜ M3 | 素材库页签 + AI 流水账转亮点 |
+| ⬜ M4 | DeepSeek 等 AI 接入 + JD 粘贴自动提取词条 |
+| ⬜ M5 | 推荐匹配经历 + 关键词命中高亮 + 组装定制简历 |
+| ⬜ M6 | AI 教练 STAR 逐条改写 + 采纳/回退/回填 |
+| ⬜ M7 | 备考中心：学习计划 + 面试预测题 |
+| ⬜ M8 | 导出 Word/PDF + 全库备份恢复 |
+| ⬜ M9 | AI 模拟追问 |
