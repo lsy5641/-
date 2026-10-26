@@ -13,7 +13,7 @@ async function main() {
     server: { port: 5173, strictPort: true },
   });
   await vite.listen();
-  console.log('[JobCoach] 前端已启动: http://localhost:5173  ← 请把这个地址输入浏览器');
+  console.log('[JobCoach] 前端已启动: http://127.0.0.1:5173  ← 请把这个地址输入浏览器');
   console.log('[JobCoach] 使用期间请勿关闭本窗口；停止请按 Ctrl+C');
 }
 
