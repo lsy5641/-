@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { DatabaseSync } from 'node:sqlite';
 import { ok, fail } from '../http';
+import { Database } from '../db';
 import { getAIConfig, chatJson } from '../ai/client';
 
-export function aiRouter(db: DatabaseSync): Router {
+export function aiRouter(db: Database): Router {
   const r = Router();
 
   r.post('/bullets', async (req, res) => {

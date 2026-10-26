@@ -1,6 +1,6 @@
 import express, { Express, Request, Response } from 'express';
-import { DatabaseSync } from 'node:sqlite';
 import { fail } from './http';
+import { Database } from './db';
 import { profileRouter } from './routes/profile';
 import { settingsRouter } from './routes/settings';
 import { materialsRouter } from './routes/materials';
@@ -8,7 +8,7 @@ import { aiRouter } from './routes/ai';
 import { jdsRouter } from './routes/jds';
 import { keywordsRouter } from './routes/keywords';
 
-export function buildApp(db: DatabaseSync): Express {
+export function buildApp(db: Database): Express {
   const app = express();
   app.use(express.json({ limit: '10mb' }));
   app.get('/api/health', (_req: Request, res: Response) => res.json({ ok: true, data: { time: new Date().toISOString() } }));

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { openDb } from './db';
 import { buildApp } from './app';
 
-const db = openDb();
+const db = await openDb();
 const app = buildApp(db);
 
 if (process.env.NODE_ENV === 'production') {
@@ -13,4 +13,4 @@ if (process.env.NODE_ENV === 'production') {
   app.get('*', (_req, res) => res.sendFile(path.join(distDir, 'index.html')));
 }
 
-app.listen(3001, () => console.log('JobCoach 后端已启动: http://localhost:3001'));
+app.listen(3001, '127.0.0.1', () => console.log('JobCoach 后端已启动: http://127.0.0.1:3001'));

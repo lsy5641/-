@@ -1,12 +1,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import request from 'supertest';
-import { DatabaseSync } from 'node:sqlite';
-import { migrate, setSetting } from '../db';
+import { Database, migrate, setSetting } from '../db';
 import { buildApp } from '../app';
 
-function api() { const db = new DatabaseSync(':memory:'); migrate(db); return request(buildApp(db)); }
-function apiWithKey() {
-  const db = new DatabaseSync(':memory:');
+async function api() { const db = await Database.open(null); migrate(db); return request(buildApp(db)); }
+async function apiWithKey() {
+  const db = await Database.open(null);
   migrate(db);
   setSetting(db, 'ai.apiKey', 'sk-test');
   return { db, app: request(buildApp(db)) };
@@ -14,7 +13,7 @@ function apiWithKey() {
 
 describe('JD API', () => {
   it('创建/列表/详情/删除', async () => {
-    const a = api();
+    const a = await api();
     const c = await a.post('/api/jds').send({ company: '字节', title: '后端开发', raw_text: '负责高并发服务…'.repeat(5) });
     expect(c.body.data).toMatchObject({ company: '字节', title: '后端开发', analyzed: 0, status: 'draft' });
     expect((await a.get('/api/jds')).body.data).toHaveLength(1);
@@ -24,7 +23,7 @@ describe('JD API', () => {
     expect((await a.get('/api/jds')).body.data).toHaveLength(0);
   });
   it('raw_text 太短返回 400', async () => {
-    expect((await api().post('/api/jds').send({ company: 'x', title: 'y', raw_text: '短' })).status).toBe(400);
+    expect((await (await api()).post('/api/jds').send({ company: 'x', title: 'y', raw_text: '短' })).status).toBe(400);
   });
 });
 
@@ -35,7 +34,7 @@ describe('JD解析提词条', () => {
       summary: { requirements: ['精通 Java', '有高并发经验'], responsibilities: ['核心服务开发'] },
       keywords: [{ term: 'Java', category: 'hard_skill', frequency: 3 }, { term: '沟通', category: 'soft_skill', frequency: 1 }],
     }) } }] }), { status: 200 })));
-    const { db, app } = apiWithKey();
+    const { db, app } = await apiWithKey();
     await app.post('/api/jds').send({ company: 'A', title: '后端', raw_text: 'x'.repeat(40) });
     const r = await app.post('/api/jds/1/analyze');
     expect(r.body.ok).toBe(true);
@@ -51,7 +50,7 @@ describe('JD解析提词条', () => {
     expect(java.totalFrequency).toBe(8);
   });
   it('未配 key 中文报错', async () => {
-    const a = api();
+    const a = await api();
     await a.post('/api/jds').send({ company: 'A', title: 'b', raw_text: 'z'.repeat(40) });
     const r = await a.post('/api/jds/1/analyze');
     expect(r.status).toBe(502);

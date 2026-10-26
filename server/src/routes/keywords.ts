@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { DatabaseSync } from 'node:sqlite';
 import { ok, fail } from '../http';
+import { Database } from '../db';
 import { nowIso } from '../db';
 
 const CATS = ['hard_skill', 'soft_skill', 'business'];
 
-export function keywordsRouter(db: DatabaseSync): Router {
+export function keywordsRouter(db: Database): Router {
   const r = Router();
 
   r.get('/', (_req, res) => {

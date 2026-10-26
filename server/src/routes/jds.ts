@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { DatabaseSync } from 'node:sqlite';
 import { ok, fail } from '../http';
+import { Database } from '../db';
 import { nowIso } from '../db';
 import { getAIConfig, chatJson } from '../ai/client';
 
@@ -9,7 +9,7 @@ function parse(row: JdRow) { return { ...row, summary: JSON.parse(row.summary), 
 
 function strArr(v: unknown): string[] { return Array.isArray(v) ? v.filter((x) => typeof x === 'string') : []; }
 
-export function upsertKeywords(db: DatabaseSync, jdId: number, kws: { term: string; category: string; frequency: number }[]): void {
+export function upsertKeywords(db: Database, jdId: number, kws: { term: string; category: string; frequency: number }[]): void {
   const t = nowIso();
   for (const k of kws) {
     const term = String(k.term ?? '').trim();
@@ -22,7 +22,7 @@ export function upsertKeywords(db: DatabaseSync, jdId: number, kws: { term: stri
   }
 }
 
-export function jdsRouter(db: DatabaseSync): Router {
+export function jdsRouter(db: Database): Router {
   const r = Router();
 
   r.get('/', (_req, res) => {

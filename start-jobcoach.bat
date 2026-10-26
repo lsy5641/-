@@ -1,5 +1,5 @@
 @echo off
-set "PATH=C:\Users\8344511\AppData\Local\Programs\nodejs24;%PATH%"
+set "PATH=C:\Users\8344511\AppData\Local\Programs\nodejs;%PATH%"
 title JobCoach - close this window to stop the app
 cd /d "%~dp0"
 echo ==================================================

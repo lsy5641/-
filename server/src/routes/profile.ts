@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { DatabaseSync } from 'node:sqlite';
 import { ok, fail } from '../http';
-import { SECTIONS, nowIso, takeVersion, ItemRow } from '../db';
+import { Database, SECTIONS, nowIso, takeVersion, ItemRow } from '../db';
 
 interface ItemDto { id: number; section: string; heading: string; period: string; bullets: string[]; sort_order: number; created_at: string; updated_at: string }
 
@@ -14,7 +13,7 @@ function validateBullets(body: any): boolean {
   return Array.isArray(b) && b.every((x: unknown) => typeof x === 'string');
 }
 
-export function profileRouter(db: DatabaseSync): Router {
+export function profileRouter(db: Database): Router {
   const r = Router();
 
   r.get('/items', (_req, res) => {

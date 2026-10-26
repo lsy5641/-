@@ -1,23 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { DatabaseSync } from 'node:sqlite';
-import { migrate, takeVersion, trimVersions, nowIso, SECTIONS } from './db';
+import { Database, migrate, takeVersion, trimVersions, nowIso, SECTIONS } from './db';
 
-function freshDb(): DatabaseSync {
-  const db = new DatabaseSync(':memory:');
+async function freshDb(): Promise<Database> {
+  const db = await Database.open(null);
   migrate(db);
   return db;
 }
 
-function insertItem(db: DatabaseSync): number {
+function insertItem(db: Database): number {
   const t = nowIso();
   return Number(db.prepare(
     'INSERT INTO profile_items (section,heading,period,bullets,sort_order,created_at,updated_at) VALUES (?,?,?,?,?,?,?)'
   ).run('skill', '', '', '[]', 0, t, t).lastInsertRowid);
 }
 
-describe('migrate', () => {
-  it('建表齐全且可插入查询', () => {
-    const db = freshDb();
+describe('migrate', async () => {
+  it('建表齐全且可插入查询', async () => {
+    const db = await freshDb();
     for (const t of ['profile_items', 'profile_versions', 'materials', 'jds', 'keywords', 'jd_keywords', 'keyword_hits', 'coach_runs', 'plans', 'questions', 'mock_chats', 'settings']) {
       expect((db.prepare(`SELECT COUNT(*) c FROM ${t}`).get() as { c: number }).c).toBe(0);
     }
@@ -27,9 +26,9 @@ describe('migrate', () => {
   it('SECTIONS 五类', () => expect(SECTIONS).toEqual(['work', 'project', 'education', 'skill', 'award']));
 });
 
-describe('takeVersion + trimVersions', () => {
-  it('快照取当前条目内容', () => {
-    const db = freshDb();
+describe('takeVersion + trimVersions', async () => {
+  it('快照取当前条目内容', async () => {
+    const db = await freshDb();
     const id = insertItem(db);
     db.prepare('UPDATE profile_items SET heading=?, bullets=? WHERE id=?').run('A公司', JSON.stringify(['x', 'y']), id);
     const vid = takeVersion(db, id, 'manual');
@@ -37,8 +36,8 @@ describe('takeVersion + trimVersions', () => {
     expect(JSON.parse(row.snapshot)).toEqual({ heading: 'A公司', bullets: ['x', 'y'] });
     expect(row.trigger).toBe('manual');
   });
-  it('超过50版裁剪最旧', () => {
-    const db = freshDb();
+  it('超过50版裁剪最旧', async () => {
+    const db = await freshDb();
     const id = insertItem(db);
     for (let i = 1; i <= 55; i++) {
       db.prepare('UPDATE profile_items SET heading=? WHERE id=?').run('h' + i, id);

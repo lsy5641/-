@@ -1,4 +1,4 @@
-import { DatabaseSync } from 'node:sqlite';
+import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -7,10 +7,67 @@ export type Section = (typeof SECTIONS)[number];
 
 export function nowIso(): string { return new Date().toISOString(); }
 
-export function openDb(file = path.resolve('data/jobcoach.db')): DatabaseSync {
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  const db = new DatabaseSync(file);
-  db.exec('PRAGMA journal_mode = WAL;');
+export interface Stmt {
+  run(...params: unknown[]): { changes: number; lastInsertRowid: number };
+  get(...params: unknown[]): any;
+  all(...params: unknown[]): any[];
+}
+
+export class Database {
+  private constructor(private raw: SqlJsDatabase, private file: string | null) {}
+
+  static async open(file: string | null): Promise<Database> {
+    const SQL = await initSqlJs();
+    const raw = file && fs.existsSync(file)
+      ? new SQL.Database(new Uint8Array(fs.readFileSync(file)))
+      : new SQL.Database();
+    return new Database(raw, file);
+  }
+
+  private persist(): void {
+    if (!this.file) return;
+    fs.mkdirSync(path.dirname(this.file), { recursive: true });
+    fs.writeFileSync(this.file, Buffer.from(this.raw.export()));
+  }
+
+  exec(sql: string): void { this.raw.exec(sql); this.persist(); }
+
+  prepare(sql: string): Stmt {
+    const raw = this.raw;
+    const self = this;
+    const scalar = (q: string): number => (raw.exec(q)[0].values[0][0] as number);
+    return {
+      run(...params: unknown[]) {
+        const st = raw.prepare(sql);
+        if (params.length) st.bind(params as never[]);
+        st.step();
+        st.free();
+        const out = { changes: scalar('SELECT changes()'), lastInsertRowid: scalar('SELECT last_insert_rowid()') };
+        self.persist();
+        return out;
+      },
+      get(...params: unknown[]) {
+        const st = raw.prepare(sql);
+        if (params.length) st.bind(params as never[]);
+        const ok = st.step();
+        const row = ok ? st.getAsObject() : undefined;
+        st.free();
+        return row;
+      },
+      all(...params: unknown[]) {
+        const st = raw.prepare(sql);
+        if (params.length) st.bind(params as never[]);
+        const out: any[] = [];
+        while (st.step()) out.push(st.getAsObject());
+        st.free();
+        return out;
+      },
+    };
+  }
+}
+
+export async function openDb(file = path.resolve('data/jobcoach.db')): Promise<Database> {
+  const db = await Database.open(file);
   migrate(db);
   return db;
 }
@@ -20,7 +77,7 @@ export interface ItemRow {
   bullets: string; sort_order: number; created_at: string; updated_at: string;
 }
 
-export function migrate(db: DatabaseSync): void {
+export function migrate(db: Database): void {
   db.exec(`
   CREATE TABLE IF NOT EXISTS profile_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -119,14 +176,13 @@ export function migrate(db: DatabaseSync): void {
   CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
-  );`);
-  db.exec(`
+  );
   CREATE INDEX IF NOT EXISTS idx_profile_versions_item ON profile_versions (item_id);
   CREATE INDEX IF NOT EXISTS idx_questions_jd ON questions (jd_id);
   CREATE INDEX IF NOT EXISTS idx_coach_runs_jd_item ON coach_runs (jd_id, item_id);`);
 }
 
-export function takeVersion(db: DatabaseSync, itemId: number, trigger: string): number {
+export function takeVersion(db: Database, itemId: number, trigger: string): number {
   const row = db.prepare('SELECT heading, bullets FROM profile_items WHERE id = ?').get(itemId) as Pick<ItemRow, 'heading' | 'bullets'> | undefined;
   if (!row) throw new Error('takeVersion: 条目不存在 id=' + itemId);
   const snapshot = JSON.stringify({ heading: row.heading, bullets: JSON.parse(row.bullets) });
@@ -136,18 +192,18 @@ export function takeVersion(db: DatabaseSync, itemId: number, trigger: string): 
   return Number(info.lastInsertRowid);
 }
 
-export function trimVersions(db: DatabaseSync, itemId: number, keep = 50): number {
+export function trimVersions(db: Database, itemId: number, keep = 50): number {
   const stale = db.prepare('SELECT id FROM profile_versions WHERE item_id = ? ORDER BY id DESC LIMIT -1 OFFSET ?').all(itemId, keep) as { id: number }[];
   const del = db.prepare('DELETE FROM profile_versions WHERE id = ?');
   for (const v of stale) del.run(v.id);
   return stale.length;
 }
 
-export function getSetting(db: DatabaseSync, key: string, fallback = ''): string {
+export function getSetting(db: Database, key: string, fallback = ''): string {
   const row = db.prepare('SELECT value FROM settings WHERE key=?').get(key) as { value: string } | undefined;
   return row ? row.value : fallback;
 }
 
-export function setSetting(db: DatabaseSync, key: string, value: string): void {
+export function setSetting(db: Database, key: string, value: string): void {
   db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key, value);
 }

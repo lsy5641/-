@@ -1,12 +1,11 @@
-import { DatabaseSync } from 'node:sqlite';
-import { getSetting } from '../db';
+import { Database, getSetting } from '../db';
 
 export interface AIConfig { baseUrl: string; apiKey: string; model: string; temperature: number }
 export interface ChatMsg { role: 'system' | 'user' | 'assistant'; content: string }
 
 export class AIError extends Error {}
 
-export function getAIConfig(db: DatabaseSync): AIConfig {
+export function getAIConfig(db: Database): AIConfig {
   return {
     baseUrl: getSetting(db, 'ai.baseUrl', 'https://api.deepseek.com'),
     apiKey: getSetting(db, 'ai.apiKey', ''),

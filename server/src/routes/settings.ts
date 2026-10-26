@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { DatabaseSync } from 'node:sqlite';
 import { ok, fail } from '../http';
+import { Database } from '../db';
 import { setSetting } from '../db';
 import { getAIConfig, chat } from '../ai/client';
 
-export function settingsRouter(db: DatabaseSync): Router {
+export function settingsRouter(db: Database): Router {
   const r = Router();
 
   r.get('/', (_req, res) => {

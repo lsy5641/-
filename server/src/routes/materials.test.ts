@@ -1,14 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import { DatabaseSync } from 'node:sqlite';
-import { migrate } from '../db';
+import { Database, migrate } from '../db';
 import { buildApp } from '../app';
 
-function api() { const db = new DatabaseSync(':memory:'); migrate(db); return request(buildApp(db)); }
+async function api() { const db = await Database.open(null); migrate(db); return request(buildApp(db)); }
 
 describe('素材API', () => {
   it('增查改删全链路', async () => {
-    const a = api();
+    const a = await api();
     const c = await a.post('/api/materials').send({ title: '高并发故事', content: 'STAR……', tags: ['高并发', '带教'] });
     expect(c.body.data).toMatchObject({ title: '高并发故事', tags: ['高并发', '带教'], source: 'manual' });
     const l = await a.get('/api/materials');
@@ -20,6 +19,6 @@ describe('素材API', () => {
     expect((await a.get('/api/materials')).body.data).toHaveLength(0);
   });
   it('非法 tags 400', async () => {
-    expect((await api().post('/api/materials').send({ title: 't', tags: 'no' })).status).toBe(400);
+    expect((await (await api()).post('/api/materials').send({ title: 't', tags: 'no' })).status).toBe(400);
   });
 });

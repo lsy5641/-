@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { DatabaseSync } from 'node:sqlite';
-import { migrate, setSetting } from '../db';
+import { Database, migrate, setSetting } from '../db';
 import { getAIConfig, chat, chatJson, AIError } from './client';
 
-function freshDb(): DatabaseSync { const db = new DatabaseSync(':memory:'); migrate(db); return db; }
+async function freshDb(): Promise<Database> { const db = await Database.open(null); migrate(db); return db; }
 
 function mockFetch(responses: Array<{ status: number; body: unknown }>) {
   const calls: Array<{ url: string; init: RequestInit }> = [];
@@ -18,16 +17,16 @@ function mockFetch(responses: Array<{ status: number; body: unknown }>) {
 
 const okBody = (content: string) => ({ status: 200, body: { choices: [{ message: { content } }] } });
 
-describe('getAIConfig', () => {
-  it('默认值 + 库内覆盖', () => {
-    const db = freshDb();
+describe('getAIConfig', async () => {
+  it('默认值 + 库内覆盖', async () => {
+    const db = await freshDb();
     expect(getAIConfig(db).baseUrl).toBe('https://api.deepseek.com');
     setSetting(db, 'ai.model', 'deepseek-reasoner');
     expect(getAIConfig(db).model).toBe('deepseek-reasoner');
   });
 });
 
-describe('chat', () => {
+describe('chat', async () => {
   afterEach(() => vi.unstubAllGlobals());
   it('正常返回 content 且带 Bearer 头', async () => {
     const calls = mockFetch([okBody('你好')]);
@@ -49,7 +48,7 @@ describe('chat', () => {
   });
 });
 
-describe('chatJson', () => {
+describe('chatJson', async () => {
   afterEach(() => vi.unstubAllGlobals());
   it('解析带围栏的 JSON', async () => {
     mockFetch([okBody('```json\n{"bullets":["a","b"]}\n```')]);

@@ -3,9 +3,9 @@ import { openDb } from './db';
 import { buildApp } from './app';
 
 async function main() {
-  const db = openDb();
+  const db = await openDb();
   const app = buildApp(db);
-  app.listen(3001, () => console.log('[JobCoach] 后端已启动: http://localhost:3001'));
+  app.listen(3001, '127.0.0.1', () => console.log('[JobCoach] 后端已启动: http://127.0.0.1:3001'));
 
   const { createServer } = await import('vite');
   const vite = await createServer({

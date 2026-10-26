@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { DatabaseSync } from 'node:sqlite';
 import { ok, fail } from '../http';
+import { Database } from '../db';
 import { nowIso } from '../db';
 
 interface MatRow { id: number; title: string; content: string; tags: string; source: string; created_at: string; updated_at: string }
 function parse(row: MatRow) { return { ...row, tags: JSON.parse(row.tags) }; }
 
-export function materialsRouter(db: DatabaseSync): Router {
+export function materialsRouter(db: Database): Router {
   const r = Router();
 
   r.get('/', (_req, res) => {

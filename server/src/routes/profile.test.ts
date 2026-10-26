@@ -1,18 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
-import { DatabaseSync } from 'node:sqlite';
-import { migrate } from '../db';
+import { Database, migrate } from '../db';
 import { buildApp } from '../app';
 
-function api() {
-  const db = new DatabaseSync(':memory:');
+async function api() {
+  const db = await Database.open(null);
   migrate(db);
   return request(buildApp(db));
 }
 
 describe('履历API', () => {
   it('创建后自动拥有1个版本，bullets 回传为数组', async () => {
-    const a = api();
+    const a = await api();
     const r = await a.post('/api/profile/items').send({ section: 'work', heading: 'A公司', period: '2022-2025', bullets: ['x'] });
     expect(r.status).toBe(200);
     expect(r.body.ok).toBe(true);
@@ -23,7 +22,7 @@ describe('履历API', () => {
   });
 
   it('更新产生新版本（trigger=manual）', async () => {
-    const a = api();
+    const a = await api();
     await a.post('/api/profile/items').send({ section: 'work', heading: 'A', bullets: ['x'] });
     await a.put('/api/profile/items/1').send({ heading: 'A', period: '', bullets: ['x', 'y'] });
     const v = await a.get('/api/profile/items/1/versions');
@@ -33,7 +32,7 @@ describe('履历API', () => {
   });
 
   it('恢复旧版本写回内容并新增 restore 版本', async () => {
-    const a = api();
+    const a = await api();
     await a.post('/api/profile/items').send({ section: 'work', heading: '原始', bullets: ['x'] });
     await a.put('/api/profile/items/1').send({ heading: '改坏了', bullets: ['x', 'y'] });
     const vs = await a.get('/api/profile/items/1/versions');
@@ -48,18 +47,18 @@ describe('履历API', () => {
   });
 
   it('非法 section 与 bullets 返回 400', async () => {
-    const a = api();
+    const a = await api();
     expect((await a.post('/api/profile/items').send({ section: 'xxx' })).status).toBe(400);
     expect((await a.post('/api/profile/items').send({ section: 'work', bullets: [1] })).status).toBe(400);
   });
 
   it('更新不存在的条目返回 404', async () => {
-    const r = await api().put('/api/profile/items/99').send({ heading: 'x', bullets: [] });
+    const r = await (await api()).put('/api/profile/items/99').send({ heading: 'x', bullets: [] });
     expect(r.status).toBe(404);
   });
 
   it('删除条目同时清其版本', async () => {
-    const a = api();
+    const a = await api();
     await a.post('/api/profile/items').send({ section: 'work', heading: 'A', bullets: [] });
     await a.delete('/api/profile/items/1');
     const v = await a.get('/api/profile/items/1/versions');
@@ -69,7 +68,7 @@ describe('履历API', () => {
   });
 
   it('restore 不属于自己的版本 id 返回 404', async () => {
-    const a = api();
+    const a = await api();
     await a.post('/api/profile/items').send({ section: 'work', heading: 'A', bullets: [] });
     await a.post('/api/profile/items').send({ section: 'work', heading: 'B', bullets: [] });
     const vs = await a.get('/api/profile/items/2/versions');
