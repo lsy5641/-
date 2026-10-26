@@ -6,6 +6,10 @@
 
 ## 三步开始使用（需要电脑已联网）
 
+**最简单方式：双击项目文件夹里的 `启动JobCoach.bat`**，等浏览器自动打开 http://localhost:5173 即可（使用期间别关黑窗口，关掉即停止）。
+
+手动方式：
+
 1. 确认装了 Node.js：命令行输入 `node --version` 有版本号即可（没有就去 https://nodejs.org/zh-cn 装 LTS 版）
 2. 打开终端（PowerShell），进入本项目文件夹：`cd C:\vagent-workspace\jobcoach`
 3. 首次使用先装依赖：`npm install`；以后每次使用只需：

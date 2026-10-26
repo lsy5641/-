@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "concurrently -k \"tsx watch server/src/index.ts\" \"vite\"",
+    "dev": "tsx server/src/dev.ts",
     "start": "tsx server/src/index.ts",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
@@ -22,7 +22,6 @@
     "@types/react-dom": "^18.3.0",
     "@types/supertest": "^6.0.2",
     "@vitejs/plugin-react": "^6.1.2",
-    "concurrently": "^9.0.0",
     "supertest": "^7.0.0",
     "typescript": "^5.5.4",
     "vite": "^8.3.5",
