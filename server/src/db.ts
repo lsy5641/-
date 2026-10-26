@@ -142,3 +142,12 @@ export function trimVersions(db: DatabaseSync, itemId: number, keep = 50): numbe
   for (const v of stale) del.run(v.id);
   return stale.length;
 }
+
+export function getSetting(db: DatabaseSync, key: string, fallback = ''): string {
+  const row = db.prepare('SELECT value FROM settings WHERE key=?').get(key) as { value: string } | undefined;
+  return row ? row.value : fallback;
+}
+
+export function setSetting(db: DatabaseSync, key: string, value: string): void {
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value').run(key, value);
+}
