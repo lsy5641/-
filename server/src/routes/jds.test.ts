@@ -57,3 +57,48 @@ describe('JD解析提词条', () => {
     expect(r.body.error).toContain('API Key');
   });
 });
+
+describe('推荐匹配经历', () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it('推荐写入 recommended，勾选保存 chosen_items', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
+      recommended: [{ item_id: 1, score: 88, reason: '后端经验高度匹配' }],
+    }) } }] }), { status: 200 })));
+    const { app } = await apiWithKey();
+    await app.post('/api/profile/items').send({ section: 'work', heading: 'A公司', bullets: ['Java 开发'] });
+    await app.post('/api/jds').send({ company: 'C', title: '后端', raw_text: 'x'.repeat(40) });
+    const r = await app.post('/api/jds/1/recommend');
+    expect(r.body.data.recommended).toEqual([{ item_id: 1, score: 88, reason: '后端经验高度匹配' }]);
+    const c = await app.put('/api/jds/1/chosen').send({ item_ids: [1] });
+    expect(c.body.data.chosen_items).toEqual([1]);
+  });
+  it('无履历条目前提下推荐返回 400 中文', async () => {
+    const { app } = await apiWithKey();
+    await app.post('/api/jds').send({ company: 'C', title: 'b', raw_text: 'y'.repeat(40) });
+    const r = await app.post('/api/jds/1/recommend');
+    expect(r.status).toBe(400);
+    expect(r.body.error).toContain('履历');
+  });
+});
+
+describe('组装定制简历与命中率', () => {
+  it('按 chosen_items 组装、命中重算与导出', async () => {
+    const { db, app } = await apiWithKey();
+    await app.post('/api/profile/items').send({ section: 'work', heading: 'A公司', bullets: ['用 Java 做过高并发系统'] });
+    await app.post('/api/profile/items').send({ section: 'work', heading: 'B公司', bullets: ['前端 Vue 开发'] });
+    await app.post('/api/jds').send({ company: 'C', title: '后端', raw_text: 'z'.repeat(40) });
+    await app.post('/api/keywords').send({ term: 'Java', category: 'hard_skill' });
+    await app.post('/api/keywords').send({ term: 'Vue', category: 'hard_skill' });
+    db.prepare('INSERT INTO jd_keywords (jd_id, keyword_id, frequency) VALUES (1,1,2)').run();
+    db.prepare('INSERT INTO jd_keywords (jd_id, keyword_id, frequency) VALUES (1,2,1)').run();
+    await app.put('/api/jds/1/chosen').send({ item_ids: [1] });
+    const r = await app.get('/api/jds/1/resume');
+    expect(r.body.data.items.map((i: { item_id: number }) => i.item_id)).toEqual([1]);
+    const m = await app.post('/api/jds/1/match');
+    expect(m.body.data.total).toBe(2);
+    expect(m.body.data.hits).toEqual(['Java']);
+    expect(m.body.data.coveragePct).toBe(50);
+    const e = await app.get('/api/jds/1/export');
+    expect(e.body.data.resume.items[0].bullets[0]).toContain('Java');
+  });
+});

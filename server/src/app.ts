@@ -7,6 +7,7 @@ import { materialsRouter } from './routes/materials';
 import { aiRouter } from './routes/ai';
 import { jdsRouter } from './routes/jds';
 import { keywordsRouter } from './routes/keywords';
+import { coachRouter } from './routes/coach';
 
 export function buildApp(db: Database): Express {
   const app = express();
@@ -18,6 +19,7 @@ export function buildApp(db: Database): Express {
   app.use('/api/ai', aiRouter(db));
   app.use('/api/jds', jdsRouter(db));
   app.use('/api/keywords', keywordsRouter(db));
+  app.use('/api/coach', coachRouter(db));
   app.use('/api', (_req: Request, res: Response) => fail(res, 404, '接口不存在'));
   return app;
 }
