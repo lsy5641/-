@@ -6,7 +6,7 @@ import { getAIConfig, chatJson } from '../ai/client';
 import { computeHits, isHit } from '../lib/match';
 
 interface JdRow { id: number; company: string; title: string; raw_text: string; summary: string; analyzed: number; recommended: string; chosen_items: string; overrides: string; status: string; created_at: string; updated_at: string }
-function parse(row: JdRow) { return { ...row, summary: JSON.parse(row.summary), recommended: JSON.parse(row.recommended), chosen_items: JSON.parse(row.chosen_items), overrides: JSON.parse(row.overrides) }; }
+function parse(row: JdRow) { return { ...row, summary: { requirements: [] as string[], responsibilities: [] as string[], ...JSON.parse(row.summary) }, recommended: JSON.parse(row.recommended), chosen_items: JSON.parse(row.chosen_items), overrides: JSON.parse(row.overrides) }; }
 
 function strArr(v: unknown): string[] { return Array.isArray(v) ? v.filter((x) => typeof x === 'string') : []; }
 

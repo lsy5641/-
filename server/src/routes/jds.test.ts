@@ -102,3 +102,14 @@ describe('组装定制简历与命中率', () => {
     expect(e.body.data.resume.items[0].bullets[0]).toContain('Java');
   });
 });
+
+describe('未解析JD的防御', () => {
+  it('summary 默认空数组，避免前端 join 崩溃', async () => {
+    const a = await api();
+    const c = await a.post('/api/jds').send({ company: 'X', title: 'y', raw_text: 'w'.repeat(40) });
+    expect(c.body.data.summary.requirements).toEqual([]);
+    expect(c.body.data.summary.responsibilities).toEqual([]);
+    const l = await a.get('/api/jds');
+    expect(l.body.data[0].summary.requirements).toEqual([]);
+  });
+});

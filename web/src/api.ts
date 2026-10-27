@@ -30,4 +30,13 @@ export const api = {
   updateMaterial: (id: number, d: object) => req(`/api/materials/${id}`, { method: 'PUT', body: JSON.stringify(d) }),
   deleteMaterial: (id: number) => req(`/api/materials/${id}`, { method: 'DELETE' }),
   aiBullets: (text: string) => req('/api/ai/bullets', { method: 'POST', body: JSON.stringify({ text }) }),
+  recommendJd: (id: number) => req(`/api/jds/${id}/recommend`, { method: 'POST' }),
+  saveChosen: (id: number, itemIds: number[]) => req(`/api/jds/${id}/chosen`, { method: 'PUT', body: JSON.stringify({ item_ids: itemIds }) }),
+  jdResume: (id: number) => req(`/api/jds/${id}/resume`),
+  matchJd: (id: number) => req(`/api/jds/${id}/match`, { method: 'POST' }),
+  exportJd: (id: number) => req(`/api/jds/${id}/export`),
+  coach: (jdId: number, itemId: number) => req(`/api/coach/generate/${jdId}/${itemId}`, { method: 'POST' }),
+  decide: (runId: number, bulletIndex: number, status: string) => req(`/api/coach/${runId}/decide`, { method: 'PUT', body: JSON.stringify({ bullet_index: bulletIndex, status }) }),
+  backfill: (runId: number) => req(`/api/coach/${runId}/backfill`, { method: 'POST' }),
+  coachToMaterial: (runId: number) => req(`/api/coach/${runId}/material`, { method: 'POST' }),
 };

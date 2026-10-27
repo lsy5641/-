@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { Jd, Keyword, CAT_LABELS } from '../types';
+import JdDetail from '../components/JdDetail';
 
 export default function WorkbenchPage() {
   const [tab, setTab] = useState<'jds' | 'keywords'>('jds');
@@ -22,6 +23,7 @@ function JdsPanel() {
   const [raw, setRaw] = useState('');
   const [busyId, setBusyId] = useState<number | null>(null);
   const [err, setErr] = useState('');
+  const [openId, setOpenId] = useState<number | null>(null);
 
   async function refresh() { try { setJds(await api.listJds()); } catch (e) { setErr((e as Error).message); } }
   useEffect(() => { refresh(); }, []);
@@ -55,6 +57,7 @@ function JdsPanel() {
             <b className="wide">{j.company || '(未填公司)'} · {j.title || '(未填岗位)'}</b>
             <span>{j.analyzed ? '✅ 已解析' : '⏳ 未解析'}</span>
             <button className="primary" onClick={() => analyze(j)} disabled={busyId === j.id}>{busyId === j.id ? 'AI 解析中…' : '解析'}</button>
+            <button onClick={() => setOpenId(j.id)}>打开</button>
             <button className="danger" onClick={() => del(j)}>删除</button>
           </div>
           {j.analyzed === 1 && (
@@ -65,6 +68,7 @@ function JdsPanel() {
           )}
         </div>
       ))}
+      {openId !== null && <JdDetail jdId={openId} onClose={() => setOpenId(null)} onError={setErr} />}
     </div>
   );
 }

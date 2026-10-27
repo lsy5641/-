@@ -29,3 +29,18 @@ button.danger { color: #c0392b; }
 .kw-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .kw-table th, .kw-table td { border-bottom: 1px solid #eee; padding: 6px 8px; text-align: left; }
 .jd-detail p { margin: 4px 0; font-size: 14px; }
+.modal-lg { width: 900px; }
+mark { background: #fff3a3; padding: 0 2px; }
+.tag-miss { background: #fdecea; color: #c0392b; }
+.score { font-weight: 700; }
+.score.high { color: #1e9e5a; }
+.score.mid { color: #d98a00; }
+.score.low { color: #c0392b; }
+.resume-paper { background: #fff; font-size: 14px; line-height: 1.7; }
+.resume-item { margin: 8px 0; }
+.resume-heading { font-weight: 600; }
+.resume-heading .period { color: #888; font-weight: 400; margin-left: 8px; font-size: 12px; }
+.sug { border-top: 1px dashed #ddd; padding: 8px 0; }
+.sug .orig { color: #999; font-size: 13px; }
+.sug .new { color: #1a7f37; font-weight: 500; font-size: 14px; }
+.sug .meta { color: #888; font-size: 12px; margin: 4px 0; }
