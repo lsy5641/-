@@ -44,3 +44,16 @@ mark { background: #fff3a3; padding: 0 2px; }
 .sug .orig { color: #999; font-size: 13px; }
 .sug .new { color: #1a7f37; font-weight: 500; font-size: 14px; }
 .sug .meta { color: #888; font-size: 12px; margin: 4px 0; }
+.task { display: flex; gap: 8px; align-items: center; margin: 6px 0; font-size: 14px; }
+.task input { display: inline-block; width: auto; margin: 0; }
+.done { text-decoration: line-through; color: #999; }
+details.q { margin: 6px 0; font-size: 14px; }
+details.q summary { cursor: pointer; }
+.hint { color: #666; font-size: 13px; margin: 4px 0 8px 18px; }
+
+@media print {
+  body * { visibility: hidden; }
+  .resume-paper, .resume-paper * { visibility: visible; }
+  .resume-paper { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+  mark { background: none; }
+}

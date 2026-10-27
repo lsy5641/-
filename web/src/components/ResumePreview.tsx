@@ -67,6 +67,8 @@ export default function ResumePreview({ jdId }: { jdId: number }) {
       <div className="row">
         <button className="primary" onClick={runMatch} disabled={busy}>{busy ? '计算中…' : '重新计算关键词命中'}</button>
         <button onClick={exportJson}>导出定制简历 JSON</button>
+        <button onClick={() => window.open(`/api/export/docx/${jdId}`, '_blank')}>导出 Word</button>
+        <button onClick={() => window.print()}>打印 / 存为 PDF</button>
         <span className="wide" />
         {match && <span>覆盖率 {match.coveragePct}%（{match.hits.length}/{match.total}）</span>}
       </div>

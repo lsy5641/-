@@ -18,5 +18,7 @@ export interface ResumeItemView { item_id: number; section: string; heading: str
 export interface Suggestion { bullet_index: number; new_text: string; star_label: string; reason: string; status: 'pending' | 'accepted' | 'rejected' }
 export interface CoachRun { id: number; jd_id: number; item_id: number; original_bullets: string[]; suggestions: Suggestion[]; backfilled: number }
 export interface MatchResult { hits: string[]; missing: string[]; coveragePct: number; total: number }
+export interface PlanWeek { week: number; focus: string; tasks: { text: string; done: boolean }[] }
+export interface ExamQuestion { id: number; jd_id: number; category: string; question: string; hint: string }
 export interface Keyword { id: number; term: string; category: string; note: string; totalFrequency: number; jdCount: number }
 export const CAT_LABELS: Record<string, string> = { hard_skill: '硬技能', soft_skill: '软素质', business: '业务词' };

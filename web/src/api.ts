@@ -39,4 +39,10 @@ export const api = {
   decide: (runId: number, bulletIndex: number, status: string) => req(`/api/coach/${runId}/decide`, { method: 'PUT', body: JSON.stringify({ bullet_index: bulletIndex, status }) }),
   backfill: (runId: number) => req(`/api/coach/${runId}/backfill`, { method: 'POST' }),
   coachToMaterial: (runId: number) => req(`/api/coach/${runId}/material`, { method: 'POST' }),
+  examGenerate: (jdId: number) => req(`/api/exam/generate/${jdId}`, { method: 'POST' }),
+  examPlan: (jdId: number) => req(`/api/exam/${jdId}/plan`),
+  toggleTask: (jdId: number, week: number, taskIndex: number) => req(`/api/exam/${jdId}/plan/toggle`, { method: 'PUT', body: JSON.stringify({ week, task_index: taskIndex }) }),
+  examQuestions: (jdId: number) => req(`/api/exam/${jdId}/questions`),
+  backupAll: () => req('/api/backup'),
+  restoreAll: (data: object) => req('/api/backup/restore', { method: 'POST', body: JSON.stringify(data) }),
 };
