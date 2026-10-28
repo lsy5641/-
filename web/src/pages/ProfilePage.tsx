@@ -34,7 +34,7 @@ export default function ProfilePage() {
         <button className={tab === 'materials' ? 'tab active' : 'tab'} onClick={() => setTab('materials')}>素材库</button>
       </div>
       {tab === 'items' ? (
-        <>
+        <div key="items" className="panel-fade">
           <p className="notice">在这里持续积累你的所有经历，写得越具体，AI 越能帮你改好。录入后可用「AI 拆亮点」把流水账变成 STAR 亮点。</p>
           <BulletsWizard onDone={refresh} onError={setError} />
           {SECTIONS.map(sec => (
@@ -49,9 +49,11 @@ export default function ProfilePage() {
               ))}
             </section>
           ))}
-        </>
+        </div>
       ) : (
-        <MaterialsPanel onError={setError} />
+        <div key="materials" className="panel-fade">
+          <MaterialsPanel onError={setError} />
+        </div>
       )}
     </div>
   );

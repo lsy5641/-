@@ -15,7 +15,7 @@ export default function WorkbenchPage() {
         <button className={tab === 'jds' ? 'tab active' : 'tab'} onClick={() => setTab('jds')}>JD 列表</button>
         <button className={tab === 'keywords' ? 'tab active' : 'tab'} onClick={() => setTab('keywords')}>词条库</button>
       </div>
-      {tab === 'jds' ? <JdsPanel /> : <KeywordsPanel />}
+      {tab === 'jds' ? <div key="jds" className="panel-fade"><JdsPanel /></div> : <div key="kw" className="panel-fade"><KeywordsPanel /></div>}
     </div>
   );
 }

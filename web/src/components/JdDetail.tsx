@@ -46,6 +46,7 @@ export default function JdDetail({ jdId, onClose, onError }: { jdId: number; onC
           <button className={tab === 'resume' ? 'tab active' : 'tab'} onClick={() => setTab('resume')}>② 定制简历</button>
           <button className={tab === 'coach' ? 'tab active' : 'tab'} onClick={() => setTab('coach')}>③ AI 教练</button>
         </div>
+        <div key={tab} className="panel-fade">
         {tab === 'rec' && (
           <div>
             <div className="row">
@@ -87,6 +88,7 @@ export default function JdDetail({ jdId, onClose, onError }: { jdId: number; onC
         )}
         {tab === 'resume' && <ResumePreview jdId={jdId} />}
         {tab === 'coach' && <CoachPanel jd={jd} onError={onError} onRefresh={refresh} />}
+        </div>
       </div>
     </div>
   );

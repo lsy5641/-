@@ -77,9 +77,15 @@ a { color: var(--color-secondary); }
   display: flex;
   flex-direction: column;
   gap: 18px;
-  animation: page-in 240ms var(--ease);
 }
-@keyframes page-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- 页面 / 面板过渡 ---------- */
+.view-next { animation: slide-next 280ms cubic-bezier(0.2, 0, 0.2, 1); }
+.view-prev { animation: slide-prev 280ms cubic-bezier(0.2, 0, 0.2, 1); }
+@keyframes slide-next { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@keyframes slide-prev { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+.panel-fade { animation: panel-in 220ms cubic-bezier(0.2, 0, 0.2, 1); }
+@keyframes panel-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 .page-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .page-head h1 { font-size: 22px; letter-spacing: -0.02em; }
@@ -266,6 +272,29 @@ details.q { margin: 8px 0; font-size: 14px; border-bottom: 1px solid #f1f5f9; pa
 details.q summary { cursor: pointer; font-weight: 500; padding: 4px 0; }
 details.q summary:hover { color: var(--color-secondary); }
 .hint { color: #64748b; font-size: 13px; margin: 6px 0 8px 18px; }
+
+/* ---------- 备考中心（左右双栏） ---------- */
+.exam-grid { display: grid; grid-template-columns: 216px minmax(0, 1fr); gap: 18px; align-items: start; }
+.exam-nav { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 6px; }
+.exam-nav-item { justify-content: space-between; width: 100%; height: 42px; padding: 0 12px; background: #fff; }
+.exam-nav-item .exam-nav-label { font-weight: 500; }
+.exam-nav-item .exam-nav-meta { font-size: 12px; color: #94a3b8; }
+.exam-nav-item.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.exam-nav-item.active .exam-nav-meta { color: rgba(255, 255, 255, 0.8); }
+.exam-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.deliverables { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e2e8f0; }
+.deliverables h4 { font-size: 12px; letter-spacing: 0.04em; color: var(--color-muted-foreground); margin-bottom: 8px; }
+.deliverable { border-left: 3px solid var(--color-accent); background: #f6fdf8; border-radius: 0 8px 8px 0; padding: 8px 12px; margin: 8px 0; }
+.deliverable a { font-weight: 600; color: #15803d; text-decoration: none; }
+.deliverable a:hover { text-decoration: underline; }
+.deliverable-desc { font-size: 13px; color: #4b5563; margin-top: 2px; }
+
+@media (max-width: 900px) {
+  .exam-grid { grid-template-columns: 1fr; }
+  .exam-nav { position: static; flex-direction: row; flex-wrap: wrap; }
+  .exam-nav-item { width: auto; height: 36px; }
+}
 
 /* ---------- 聊天 ---------- */
 .chat-box { max-height: 380px; overflow-y: auto; padding: 12px; background: #f8fafc; border: 1px solid #e9eef5; border-radius: var(--radius-md); }
