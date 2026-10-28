@@ -11,6 +11,7 @@ import { coachRouter } from './routes/coach';
 import { examRouter } from './routes/exam';
 import { exportRouter } from './routes/export';
 import { backupRouter } from './routes/backup';
+import { mockRouter } from './routes/mock';
 
 export function buildApp(db: Database): Express {
   const app = express();
@@ -26,6 +27,7 @@ export function buildApp(db: Database): Express {
   app.use('/api/exam', examRouter(db));
   app.use('/api/export', exportRouter(db));
   app.use('/api/backup', backupRouter(db));
+  app.use('/api/mock', mockRouter(db));
   app.use('/api', (_req: Request, res: Response) => fail(res, 404, '接口不存在'));
   return app;
 }
