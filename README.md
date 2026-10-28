@@ -122,4 +122,44 @@ jobcoach/
 | ✅ M8 | Word/PDF 导出 + 全库备份恢复 |
 | ✅ M9 | AI 模拟追问（多轮对话练习） |
 
-后续可选：界面多套主题、简历模板选择、多 JD 对比、桌面端打包。
+⚠️ 桌面版（Electron）已提供：便携版 exe 与安装包，见下节。后续可选：多套主题、简历模板选择、多 JD 对比。
+---
+
+## 六、桌面版（发给同事用）
+
+> 同事**不需要安装 Node**，双击即用；每人的数据各自保存在自己电脑上。
+
+### 已生成的安装包
+
+| 文件 | 说明 |
+|---|---|
+| `release\JobCoach-1.0.0-portable.exe` | **绿色便携版**（约 116MB），单文件双击即用，无需安装 |
+| `release\JobCoach-Setup-1.0.0.exe` | **安装包**（约 136MB），可自选安装目录、创建桌面/开始菜单快捷方式，可卸载 |
+
+- 首次打开 Windows 可能提示"不受信任的应用/已保护你的电脑"：点 **更多信息 → 仍要运行**（因为未购买代码签名证书）
+- 部分公司电脑的终端安全软件可能拦截未签名程序，如遇拦截请联系 IT 加白
+
+### 桌面版数据位置
+
+- 数据保存在：`%APPDATA%\JobCoach\data\jobcoach.db`（每人各自一份）
+- 菜单 **文件 → 打开数据文件夹** 可直接定位
+- 换机/备份：复制该文件即可；也可在设置弹窗里导出全库 JSON
+
+### 重新打包（仅开发者）
+
+```powershell
+npm install
+npm run dist:win     # 依次执行前端构建、服务端打包、electron-builder
+```
+
+产物输出到 `release\`。如果终端里 `electron-builder` 报参数异常，请确认使用的是系统安装的 Node（而非某些工具内置的 Node），或直接运行：
+
+```powershell
+node scripts\build-desktop.mjs
+```
+
+### 桌面版实现说明
+
+- `electron/main.cjs`：Electron 主进程，启动内置 HTTP 服务（仅监听 127.0.0.1 随机端口）后加载页面
+- `server/src/start.ts`：可配置数据目录与静态资源目录的服务启动器（桌面/网页共用）
+- `scripts/build-desktop.mjs`：electron-builder 编程式打包入口
