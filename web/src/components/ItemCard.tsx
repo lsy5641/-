@@ -35,7 +35,7 @@ export default function ItemCard({ item, onChanged, onError }: {
     <div className="card">
       <div className="row">
         <input className="wide" placeholder="抬头：公司 - 岗位" value={heading} onChange={e => setHeading(e.target.value)} />
-        <input style={{ width: 160 }} placeholder="起止时间（可选）" value={period} onChange={e => setPeriod(e.target.value)} />
+        <input className="period-input" placeholder="起止时间（可选）" value={period} onChange={e => setPeriod(e.target.value)} />
       </div>
       {bullets.map((b, i) => (
         <div key={i} className="row">

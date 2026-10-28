@@ -1,12 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import Icon from './Icon';
 
-export default function BulletsWizard({ onDone, onError }: { onDone: () => void; onError: (m: string) => void }) {
+export default function BulletsWizard({ onDone, onError, autoFocus, onFocusDone }: {
+  onDone: () => void; onError: (m: string) => void; autoFocus?: boolean; onFocusDone?: () => void;
+}) {
   const [text, setText] = useState('');
   const [bullets, setBullets] = useState<string[]>([]);
   const [picked, setPicked] = useState<boolean[]>([]);
   const [busy, setBusy] = useState(false);
+  const areaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (autoFocus && areaRef.current) {
+      areaRef.current.focus();
+      areaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      onFocusDone?.();
+    }
+  }, [autoFocus]);
 
   async function run() {
     setBusy(true); setBullets([]);
@@ -24,7 +35,7 @@ export default function BulletsWizard({ onDone, onError }: { onDone: () => void;
   return (
     <div className="card">
       <b>AI 流水账拆亮点</b>
-      <textarea className="wide" rows={5} placeholder="把工作流水账原样贴进来（越具体越好，带数字最佳），AI 帮你拆成 STAR 风格简历亮点" value={text} onChange={e => setText(e.target.value)} />
+      <textarea className="wide" rows={5} ref={areaRef} placeholder="把工作流水账原样贴进来（越具体越好，带数字最佳），AI 帮你拆成 STAR 风格简历亮点" value={text} onChange={e => setText(e.target.value)} />
       <div className="row"><button className="primary" onClick={run} disabled={busy || text.trim().length < 10}>{busy ? 'AI 拆解中…' : <><Icon name="spark" /> AI 拆亮点</>}</button></div>
       {bullets.length > 0 && (
         <div>

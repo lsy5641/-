@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { Database } from '../db';
 import { fail } from '../http';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
@@ -23,7 +23,7 @@ export function exportRouter(db: Database): Router {
       new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `${jd.company} · ${jd.title}`, bold: true, size: 36 })] }),
       new Paragraph({ text: '' }),
     ];
-    for (const sec of ['work', 'project', 'education', 'skill', 'award']) {
+    for (const sec of ['education', 'work', 'project', 'skill', 'award']) {
       const group = items.filter((i) => i.section === sec);
       if (!group.length) continue;
       children.push(new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun({ text: SECTION_LABELS[sec], bold: true, size: 26 })] }));

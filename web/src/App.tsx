@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ProfilePage from './pages/ProfilePage';
 import WorkbenchPage from './pages/WorkbenchPage';
 import ExamPage from './pages/ExamPage';
@@ -20,8 +20,11 @@ export default function App() {
     setPage(p);
   }
 
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [page]);
+
   return (
     <div className="app">
+      <a className="skip-link" href="#main">跳到主内容</a>
       <header className="topnav">
         <div className="brand">
           <span className="brand-mark" aria-hidden="true">J</span>
@@ -37,11 +40,13 @@ export default function App() {
           <Icon name="gear" />
         </button>
       </header>
-      <div key={page} className={'view view-' + dir}>
-        {page === 'profile' && <ProfilePage />}
-        {page === 'workbench' && <WorkbenchPage />}
-        {page === 'exam' && <ExamPage />}
-      </div>
+      <main id="main" tabIndex={-1}>
+        <div key={page} className={'view view-' + dir}>
+          {page === 'profile' && <ProfilePage onNavigate={go} />}
+          {page === 'workbench' && <WorkbenchPage />}
+          {page === 'exam' && <ExamPage onNavigate={go} />}
+        </div>
+      </main>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
   );

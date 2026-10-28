@@ -24,6 +24,12 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
     }).catch(e => setMsg((e as Error).message));
   }, []);
 
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   async function save() {
     setBusy(true); setMsg('');
     try {

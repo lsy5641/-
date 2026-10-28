@@ -3,6 +3,7 @@ import { api } from '../api';
 import { Jd, Suggestion, ProfileItem } from '../types';
 import ResumePreview from './ResumePreview';
 import Icon from './Icon';
+import Stepper from './Stepper';
 
 export default function JdDetail({ jdId, onClose, onError }: { jdId: number; onClose: () => void; onError: (m: string) => void }) {
   const [tab, setTab] = useState<'rec' | 'resume' | 'coach'>('rec');
@@ -18,6 +19,12 @@ export default function JdDetail({ jdId, onClose, onError }: { jdId: number; onC
     } catch (e) { onError((e as Error).message); }
   }
   useEffect(() => { refresh(); }, [jdId]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   async function recommend() {
     setBusy(true);
@@ -41,11 +48,15 @@ export default function JdDetail({ jdId, onClose, onError }: { jdId: number; onC
           <h3 className="wide">{jd.company || '(公司)'} · {jd.title || '(岗位)'}</h3>
           <button onClick={onClose}>关闭</button>
         </div>
-        <div className="row">
-          <button className={tab === 'rec' ? 'tab active' : 'tab'} onClick={() => setTab('rec')}>① 推荐经历</button>
-          <button className={tab === 'resume' ? 'tab active' : 'tab'} onClick={() => setTab('resume')}>② 定制简历</button>
-          <button className={tab === 'coach' ? 'tab active' : 'tab'} onClick={() => setTab('coach')}>③ AI 教练</button>
-        </div>
+        <Stepper
+          current={tab}
+          onSelect={(k) => setTab(k as 'rec' | 'resume' | 'coach')}
+          steps={[
+            { key: 'rec', label: '推荐经历', done: jd.chosen_items.length > 0 },
+            { key: 'resume', label: '定制简历', done: Object.keys(jd.overrides ?? {}).length > 0 },
+            { key: 'coach', label: 'AI 教练' },
+          ]}
+        />
         <div key={tab} className="panel-fade">
         {tab === 'rec' && (
           <div>
@@ -60,16 +71,20 @@ export default function JdDetail({ jdId, onClose, onError }: { jdId: number; onC
               <p>{(jd.summary.responsibilities ?? []).join('；')}</p>
             </div>
             {jd.recommended.length === 0 && <p style={{ color: '#888' }}>点上方按钮，AI 会从你的履历里挑出最匹配的经历并说明理由；也可以先在下方手动勾选</p>}
-            {jd.recommended.map((r) => (
-              <div key={r.item_id} className="card">
-                <div className="row">
-                  <input type="checkbox" checked={jd.chosen_items.includes(r.item_id)} onChange={() => toggleChosen(r.item_id)} />
-                  <b className="wide">条目 #{r.item_id}</b>
-                  <span className={'score ' + (r.score >= 80 ? 'high' : r.score >= 60 ? 'mid' : 'low')}>{r.score} 分</span>
+            {jd.recommended.map((r) => {
+              const it = allItems.find((x) => x.id === r.item_id);
+              return (
+                <div key={r.item_id} className="card">
+                  <div className="row" style={{ marginTop: 0 }}>
+                    <input type="checkbox" checked={jd.chosen_items.includes(r.item_id)} onChange={() => toggleChosen(r.item_id)} aria-label={`选择经历 ${it?.heading || r.item_id}`} />
+                    <b className="wide">{it?.heading || `（未命名经历，条目 #${r.item_id}）`}</b>
+                    <span className={'score ' + (r.score >= 80 ? 'high' : r.score >= 60 ? 'mid' : 'low')}>{r.score} 分</span>
+                  </div>
+                  {it && it.bullets.length > 0 && <p className="snippet">{it.bullets.join(' · ').slice(0, 90)}</p>}
+                  <p style={{ margin: '4px 0', fontSize: 14 }}>{r.reason}</p>
                 </div>
-                <p style={{ margin: '4px 0', fontSize: 14 }}>{r.reason}</p>
-              </div>
-            ))}
+              );
+            })}
             {jd.recommended.length === 0 && allItems.length > 0 && (
               <div className="card">
                 <b>手动挑选（全部履历条目）：</b>
@@ -84,17 +99,36 @@ export default function JdDetail({ jdId, onClose, onError }: { jdId: number; onC
             {jd.recommended.length === 0 && allItems.length === 0 && (
               <p style={{ color: '#888' }}>你的履历还是空的，先去「① 个人履历」录入经历</p>
             )}
+            <div className="row" style={{ marginTop: 14 }}>
+              <button className="primary" disabled={jd.chosen_items.length === 0} onClick={() => setTab('resume')}>
+                下一步：定制简历{jd.chosen_items.length === 0 ? '（先勾选经历）' : ''}
+              </button>
+            </div>
           </div>
         )}
-        {tab === 'resume' && <ResumePreview jdId={jdId} />}
-        {tab === 'coach' && <CoachPanel jd={jd} onError={onError} onRefresh={refresh} />}
+        {tab === 'resume' && (
+          <div>
+            <ResumePreview jdId={jdId} />
+            <div className="row" style={{ marginTop: 14 }}>
+              <button className="primary" disabled={jd.chosen_items.length === 0} onClick={() => setTab('coach')}>下一步：AI 教练改写</button>
+            </div>
+          </div>
+        )}
+        {tab === 'coach' && (
+          <div>
+            <CoachPanel jd={jd} items={allItems} onError={onError} onRefresh={refresh} />
+            <div className="row" style={{ marginTop: 14 }}>
+              <button onClick={onClose}>完成，关闭</button>
+            </div>
+          </div>
+        )}
         </div>
       </div>
     </div>
   );
 }
 
-function CoachPanel({ jd, onError, onRefresh }: { jd: Jd; onError: (m: string) => void; onRefresh: () => void }) {
+function CoachPanel({ jd, items, onError, onRefresh }: { jd: Jd; items: ProfileItem[]; onError: (m: string) => void; onRefresh: () => void }) {
   const [runs, setRuns] = useState<Record<number, { id: number; original_bullets: string[]; suggestions: Suggestion[]; backfilled: number }>>({});
   const [busyId, setBusyId] = useState<number | null>(null);
 
@@ -130,10 +164,14 @@ function CoachPanel({ jd, onError, onRefresh }: { jd: Jd; onError: (m: string) =
     <div>
       {jd.chosen_items.map((itemId) => {
         const run = runs[itemId];
+        const it = items.find((x) => x.id === itemId);
         return (
           <div key={itemId} className="card">
-            <div className="row">
-              <b className="wide">条目 #{itemId}</b>
+            <div className="row" style={{ marginTop: 0 }}>
+              <div className="wide">
+                <b>{it?.heading || `（未命名经历，条目 #${itemId}）`}</b>
+                {it && it.bullets.length > 0 && <div className="snippet">{it.bullets.join(' · ').slice(0, 90)}</div>}
+              </div>
               <button className="primary" onClick={() => optimize(itemId)} disabled={busyId === itemId}>{busyId === itemId ? 'AI 改写中…' : run ? '重新生成建议' : 'AI 按 JD 优化'}</button>
             </div>
             {run && run.suggestions.map((s) => (

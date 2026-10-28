@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { Database, migrate, takeVersion, trimVersions, nowIso, SECTIONS } from './db';
 
 async function freshDb(): Promise<Database> {
@@ -23,7 +23,7 @@ describe('migrate', async () => {
     const id = insertItem(db);
     expect(id).toBeGreaterThan(0);
   });
-  it('SECTIONS 五类', () => expect(SECTIONS).toEqual(['work', 'project', 'education', 'skill', 'award']));
+  it('SECTIONS 五类', () => expect(SECTIONS).toEqual(['education', 'work', 'project', 'skill', 'award']));
 });
 
 describe('takeVersion + trimVersions', async () => {
