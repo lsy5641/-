@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { Jd, PlanWeek, ExamQuestion } from '../types';
+import MockChat from '../components/MockChat';
 
 const CAT_LABELS: Record<string, string> = { project_deep: '项目深挖', tech: '技术题', behavioral: '行为题 (STAR)', hr: 'HR 题' };
 const CATS = ['project_deep', 'tech', 'behavioral', 'hr'];
@@ -12,6 +13,7 @@ export default function ExamPage() {
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [chatQ, setChatQ] = useState<ExamQuestion | null>(null);
 
   useEffect(() => {
     api.listJds().then((list: Jd[]) => {
@@ -81,6 +83,7 @@ export default function ExamPage() {
                   <details key={q.id} className="q">
                     <summary>{i + 1}. {q.question}</summary>
                     <p className="hint">提示：{q.hint || '—'}</p>
+                    <button onClick={() => setChatQ(q)}>🎤 模拟追问</button>
                   </details>
                 ))}
               </div>
@@ -88,6 +91,7 @@ export default function ExamPage() {
           })}
         </div>
       )}
+      {chatQ && <MockChat question={chatQ} onClose={() => setChatQ(null)} onError={setMsg} />}
     </div>
   );
 }
