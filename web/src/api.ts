@@ -45,4 +45,7 @@ export const api = {
   examQuestions: (jdId: number) => req(`/api/exam/${jdId}/questions`),
   backupAll: () => req('/api/backup'),
   restoreAll: (data: object) => req('/api/backup/restore', { method: 'POST', body: JSON.stringify(data) }),
+  mockGet: (questionId: number) => req(`/api/mock/${questionId}`),
+  mockReply: (questionId: number, message: string) => req(`/api/mock/${questionId}/reply`, { method: 'POST', body: JSON.stringify({ message }) }),
+  mockReset: (questionId: number) => req(`/api/mock/${questionId}/reset`, { method: 'POST' }),
 };

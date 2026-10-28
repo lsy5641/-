@@ -50,6 +50,14 @@ mark { background: #fff3a3; padding: 0 2px; }
 details.q { margin: 6px 0; font-size: 14px; }
 details.q summary { cursor: pointer; }
 .hint { color: #666; font-size: 13px; margin: 4px 0 8px 18px; }
+.chat-box { max-height: 360px; overflow-y: auto; padding: 8px; background: #fafbfe; border: 1px solid #eef0f6; border-radius: 8px; }
+.msg { display: flex; margin: 10px 0; }
+.msg.candidate { justify-content: flex-end; }
+.msg .bubble { max-width: 78%; padding: 8px 12px; border-radius: 10px; background: #fff; border: 1px solid #e6e8f0; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+.msg.candidate .bubble { background: #3b6ef6; border-color: #3b6ef6; color: #fff; }
+.msg .who { font-size: 11px; color: #98a; margin-bottom: 2px; }
+.msg.candidate .who { color: rgba(255,255,255,.75); }
+.chat-input { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; }
 
 @media print {
   body * { visibility: hidden; }
