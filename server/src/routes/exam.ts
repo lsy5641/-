@@ -6,7 +6,7 @@ import { getAIConfig, chatJson } from '../ai/client';
 
 interface PlanRow { id: number; jd_id: number; weeks: string; created_at: string; updated_at: string }
 interface QRow { id: number; jd_id: number; category: string; question: string; hint: string; based_on: string }
-interface Week { week: number; focus: string; tasks: { text: string; done: boolean }[] }
+interface Week { week: number; focus: string; tasks: { text: string; done: boolean }[]; projects: { name: string; url: string; deliverable: string }[] }
 
 const CATS = ['project_deep', 'tech', 'behavioral', 'hr'];
 const CAT_LABELS: Record<string, string> = { project_deep: '项目深挖', tech: '技术题', behavioral: '行为题(STAR)', hr: 'HR 题' };
@@ -33,13 +33,21 @@ export function examRouter(db: Database): Router {
       const resumeText = items.filter((i) => chosen.includes(i.id))
         .map((i) => `${i.heading}: ${(overrides[String(i.id)]?.bullets ?? JSON.parse(i.bullets)).join('；')}`).join('\n');
       const out = await chatJson(cfg, [
-        { role: 'system', content: '你是资深面试教练。根据 JD 与候选人简历生成备考包，只输出 JSON：{"weeks":[{"week":1,"focus":"本周主题","tasks":["具体任务"]}],"questions":[{"category":"project_deep|tech|behavioral|hr","question":"题干","hint":"答题要点提示"}]}。学习计划 2~4 周，每周 3~5 个任务（必须包含"补强缺失词条"与"复习主题"类任务）；面试题至少 15 道，四类都要有，behavioral 题 hint 要提醒用 STAR 讲故事。' },
+        { role: 'system', content: '你是资深面试教练。根据 JD 与候选人简历生成备考包，只输出 JSON：{"weeks":[{"week":1,"focus":"本周主题","tasks":["具体任务"],"projects":[{"name":"推荐项目或学习资源名","url":"https://...","deliverable":"完成后产出的可见交付物"}]}],"questions":[{"category":"project_deep|tech|behavioral|hr","question":"题干","hint":"答题要点提示"}]}。学习计划 2~4 周，每周 3~5 个任务（必须包含"补强缺失词条"与"复习主题"类任务）；每周再给 1~2 个推荐项目/资源作为该周的节点交付物，url 用真实可达的官网/文档/开源仓库地址，deliverable 写明产出物（如"一个可演示的 demo 仓库""一篇技术笔记"）；面试题至少 15 道，四类都要有，behavioral 题 hint 要提醒用 STAR 讲故事。' },
         { role: 'user', content: `【JD】${jd.company} ${jd.title}\n要点：${jd.summary}\n【缺失词条】${missing.map((m) => m.term).join('、') || '无'}\n【我的简历】\n${resumeText || '（未选择经历）'}` },
       ]);
-      const weeks: Week[] = (Array.isArray(out?.weeks) ? out.weeks : []).slice(0, 4).map((w: { week?: number; focus?: string; tasks?: unknown }, i: number) => ({
+      const weeks: Week[] = (Array.isArray(out?.weeks) ? out.weeks : []).slice(0, 4).map((w: { week?: number; focus?: string; tasks?: unknown; projects?: unknown }, i: number) => ({
         week: Number(w.week) || i + 1,
         focus: String(w.focus ?? ''),
         tasks: (Array.isArray(w.tasks) ? w.tasks : []).filter((t: unknown) => typeof t === 'string').slice(0, 6).map((t: string) => ({ text: t, done: false })),
+        projects: (Array.isArray(w.projects) ? w.projects : [])
+          .filter((p: { name?: unknown }) => typeof (p as { name?: unknown })?.name === 'string')
+          .slice(0, 3)
+          .map((p: { name: string; url?: string; deliverable?: string }) => ({
+            name: p.name.slice(0, 120),
+            url: /^https?:\/\//i.test(String(p.url ?? '')) ? String(p.url) : '',
+            deliverable: String(p.deliverable ?? '').slice(0, 200),
+          })),
       })).filter((w: Week) => w.tasks.length > 0);
       const qs = (Array.isArray(out?.questions) ? out.questions : [])
         .filter((q: { question?: unknown; category?: unknown }) => typeof q.question === 'string' && CATS.includes(String(q.category)))
@@ -97,6 +105,10 @@ export function examRouter(db: Database): Router {
     for (const w of weeks) {
       lines.push(`### 第 ${w.week} 周 · ${w.focus}`, '');
       for (const t of w.tasks) lines.push(`- [${t.done ? 'x' : ' '}] ${t.text}`);
+      if (w.projects?.length) {
+        lines.push('', '**交付物 / 推荐项目**');
+        for (const p of w.projects) lines.push(`- ${p.url ? `[${p.name}](${p.url})` : p.name}${p.deliverable ? ` — ${p.deliverable}` : ''}`);
+      }
       lines.push('');
     }
     lines.push('## 面试预测题', '');

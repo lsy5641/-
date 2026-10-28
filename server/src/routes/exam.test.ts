@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 import request from 'supertest';
 import { Database, migrate, setSetting } from '../db';
 import { buildApp } from '../app';
@@ -12,7 +12,7 @@ async function apiWithKey() {
 
 const PACK = {
   weeks: [
-    { week: 1, focus: '补齐高并发基础', tasks: ['复习 Java 并发包', '补写高并发项目经历', '刷 5 道并发题'] },
+    { week: 1, focus: '补齐高并发基础', tasks: ['复习 Java 并发包', '补写高并发项目经历', '刷 5 道并发题'], projects: [{ name: 'Java 并发编程实战笔记', url: 'https://docs.oracle.com/javase/tutorial/essential/concurrency/', deliverable: '一篇 JUC 学习笔记 + 3 个可运行 demo' }] },
     { week: 2, focus: '项目深挖', tasks: ['把交易系统项目补成 STAR', '准备 3 个故障排查故事'] },
   ],
   questions: [
@@ -41,6 +41,8 @@ describe('备考中心', () => {
     expect(r.body.ok).toBe(true);
     expect(r.body.data.plan.weeks).toHaveLength(2);
     expect(r.body.data.plan.weeks[0].tasks[0]).toEqual({ text: '复习 Java 并发包', done: false });
+    expect(r.body.data.plan.weeks[0].projects[0].name).toContain('并发');
+    expect(r.body.data.plan.weeks[0].projects[0].url).toContain('https://');
     expect(r.body.data.questions).toHaveLength(5);
     expect(r.body.data.questions[0].category).toBe('project_deep');
   });
@@ -67,6 +69,7 @@ describe('备考中心', () => {
     expect(r.text).toContain('# 备考包');
     expect(r.text).toContain('第 1 周');
     expect(r.text).toContain('讲讲你最有挑战的项目');
+    expect(r.text).toContain('交付物 / 推荐项目');
   });
 
   it('未生成时导出 404 中文', async () => {

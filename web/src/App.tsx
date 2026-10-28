@@ -6,11 +6,20 @@ import SettingsModal from './components/SettingsModal';
 import Icon from './components/Icon';
 
 type Page = 'profile' | 'workbench' | 'exam';
+const ORDER: Page[] = ['profile', 'workbench', 'exam'];
 const LABELS: Record<Page, string> = { profile: '① 个人履历', workbench: '② JD 工作台', exam: '③ 备考中心' };
 
 export default function App() {
   const [page, setPage] = useState<Page>('profile');
+  const [dir, setDir] = useState<'next' | 'prev'>('next');
   const [showSettings, setShowSettings] = useState(false);
+
+  function go(p: Page) {
+    if (p === page) return;
+    setDir(ORDER.indexOf(p) > ORDER.indexOf(page) ? 'next' : 'prev');
+    setPage(p);
+  }
+
   return (
     <div className="app">
       <header className="topnav">
@@ -20,7 +29,7 @@ export default function App() {
         </div>
         <nav aria-label="主导航">
           {(Object.keys(LABELS) as Page[]).map(p => (
-            <button key={p} className={p === page ? 'tab active' : 'tab'} aria-current={p === page ? 'page' : undefined} onClick={() => setPage(p)}>{LABELS[p]}</button>
+            <button key={p} className={p === page ? 'tab active' : 'tab'} aria-current={p === page ? 'page' : undefined} onClick={() => go(p)}>{LABELS[p]}</button>
           ))}
         </nav>
         <span className="wide" />
@@ -28,9 +37,11 @@ export default function App() {
           <Icon name="gear" />
         </button>
       </header>
-      {page === 'profile' && <ProfilePage />}
-      {page === 'workbench' && <WorkbenchPage />}
-      {page === 'exam' && <ExamPage />}
+      <div key={page} className={'view view-' + dir}>
+        {page === 'profile' && <ProfilePage />}
+        {page === 'workbench' && <WorkbenchPage />}
+        {page === 'exam' && <ExamPage />}
+      </div>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
   );
