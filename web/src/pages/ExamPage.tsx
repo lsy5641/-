@@ -26,10 +26,14 @@ export default function ExamPage({ onNavigate }: { onNavigate?: (p: 'profile' | 
     api.listJds().then((list: Jd[]) => {
       setJds(list);
       if (list.length) setJdId(list[0].id);
-    }).catch((e) => setMsg((e as Error).message));
+      else setLoading(false);
+    }).catch((e) => { setMsg((e as Error).message); setLoading(false); });
   }, []);
 
-  useEffect(() => { if (jdId) load(jdId); }, [jdId]);
+  useEffect(() => {
+    if (!jdId) { setWeeks([]); setQuestions([]); setSel('q'); setLoading(false); return; }
+    load(jdId);
+  }, [jdId]);
 
   useEffect(() => {
     if (!busy) { setElapsed(0); return; }
@@ -74,6 +78,7 @@ export default function ExamPage({ onNavigate }: { onNavigate?: (p: 'profile' | 
   const totalDone = weeks.reduce((s, w) => s + w.tasks.filter((t) => t.done).length, 0);
   const totalTasks = weeks.reduce((s, w) => s + w.tasks.length, 0);
   const hasPlan = weeks.length > 0 || questions.length > 0;
+  const pct = totalTasks === 0 ? 0 : Math.round((totalDone / totalTasks) * 100);
 
   return (
     <div className="page">
@@ -90,13 +95,16 @@ export default function ExamPage({ onNavigate }: { onNavigate?: (p: 'profile' | 
         <>
           <div className="row">
             <b>选择 JD：</b>
-            <div style={{ width: 300 }}>
+            <div style={{ width: 320 }}>
               <Select
                 ariaLabel="选择 JD"
                 value={jdId ? String(jdId) : ''}
-                onChange={(v) => setJdId(Number(v))}
-                placeholder="请选择 JD"
-                options={jds.map((j) => ({ value: String(j.id), label: `${j.company || '(未填公司)'} · ${j.title || '(未填岗位)'}` }))}
+                onChange={(v) => setJdId(v === '' ? null : Number(v))}
+                placeholder="不选择 JD"
+                options={[
+                  { value: '', label: '不选择 JD（先看看）' },
+                  ...jds.map((j) => ({ value: String(j.id), label: `${j.company || '(未填公司)'} · ${j.title || '(未填岗位)'}` })),
+                ]}
               />
             </div>
             <button className="primary" onClick={generate} disabled={busy || !jdId}>{busy ? `生成中 ${elapsed}s` : hasPlan ? '重新生成备考包' : '生成备考包'}</button>
@@ -117,81 +125,125 @@ export default function ExamPage({ onNavigate }: { onNavigate?: (p: 'profile' | 
 
           {msg && <div className="toast" role="status">{msg}<button onClick={() => setMsg('')} aria-label="关闭提示">×</button></div>}
 
-          {loading ? <SkeletonCards count={2} /> : !hasPlan ? (
+          {!jdId ? (
+            <div className="card">
+              <b>先选一个 JD</b>
+              <p className="notice">从下面点一个目标岗位开始；也可以在上方下拉里随时「不选择 JD」回到这里。</p>
+              <div className="jd-pick-grid">
+                {jds.map((j) => (
+                  <button key={j.id} className="jd-pick" onClick={() => setJdId(j.id)}>
+                    <b>{j.company || '(未填公司)'}</b>
+                    <span className="jd-pick-title">{j.title || '(未填岗位)'}</span>
+                    <span className={j.analyzed ? 'badge ok' : 'badge wait'}>{j.analyzed ? '已解析' : '待解析'}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : loading ? <SkeletonCards count={2} /> : !hasPlan ? (
             <EmptyState title="这份 JD 还没有备考包" desc="点击「生成备考包」，AI 会按职位要求排出 2~4 周学习计划（含每周推荐项目与交付物）和 15+ 道面试预测题。" icon="spark">
               <button className="primary" onClick={generate} disabled={busy}>立即生成</button>
             </EmptyState>
           ) : (
-            <div className="exam-grid">
-              <aside className="exam-nav" aria-label="备考导航">
-                {weeks.map((w) => {
-                  const done = w.tasks.filter((t) => t.done).length;
-                  return (
-                    <button key={w.week} className={sel === w.week ? 'exam-nav-item active' : 'exam-nav-item'} onClick={() => setSel(w.week)}>
-                      <span className="exam-nav-label">第 {w.week} 周</span>
-                      <span className="exam-nav-meta">{done}/{w.tasks.length}</span>
-                    </button>
-                  );
-                })}
-                <button className={sel === 'q' ? 'exam-nav-item active' : 'exam-nav-item'} onClick={() => setSel('q')}>
-                  <span className="exam-nav-label">面试预测题</span>
-                  <span className="exam-nav-meta">{questions.length}</span>
-                </button>
-              </aside>
+            <>
+              <div className="exam-grid">
+                <aside className="exam-nav" aria-label="备考导航">
+                  {weeks.map((w) => {
+                    const done = w.tasks.filter((t) => t.done).length;
+                    return (
+                      <button key={w.week} className={sel === w.week ? 'exam-nav-item active' : 'exam-nav-item'} onClick={() => setSel(w.week)}>
+                        <span className="exam-nav-label">第 {w.week} 周</span>
+                        <span className="exam-nav-meta">{done}/{w.tasks.length}</span>
+                      </button>
+                    );
+                  })}
+                  <button className={sel === 'q' ? 'exam-nav-item active' : 'exam-nav-item'} onClick={() => setSel('q')}>
+                    <span className="exam-nav-label">面试预测题</span>
+                    <span className="exam-nav-meta">{questions.length}</span>
+                  </button>
+                </aside>
 
-              <section className="exam-main">
-                {current && (
-                  <div key={current.week} className="panel-fade">
-                    <div className="card">
-                      <div className="row" style={{ marginTop: 0 }}>
-                        <h3 className="wide">第 {current.week} 周 · {current.focus}</h3>
-                        <span className="badge ok">{current.tasks.filter((t) => t.done).length}/{current.tasks.length} 完成</span>
+                <section className="exam-main">
+                  {current && (
+                    <div key={current.week} className="panel-fade">
+                      <div className="card">
+                        <div className="row" style={{ marginTop: 0 }}>
+                          <h3 className="wide">第 {current.week} 周 · {current.focus}</h3>
+                          <span className="badge ok">{current.tasks.filter((t) => t.done).length}/{current.tasks.length} 完成</span>
+                        </div>
+                        {current.tasks.map((t, i) => (
+                          <label key={i} className="task">
+                            <input type="checkbox" checked={t.done} onChange={() => toggle(current.week, i)} />
+                            <span className={t.done ? 'done' : ''}>{t.text}</span>
+                          </label>
+                        ))}
+                        {(current.projects?.length ?? 0) > 0 && (
+                          <div className="deliverables">
+                            <h4>交付物 · 推荐项目</h4>
+                            {current.projects!.map((p) => (
+                              <div key={p.name} className="deliverable">
+                                {p.url
+                                  ? <a href={p.url} target="_blank" rel="noreferrer">{p.name}<span aria-hidden="true"> ↗</span></a>
+                                  : <b>{p.name}</b>}
+                                {p.deliverable && <div className="deliverable-desc">{p.deliverable}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      {current.tasks.map((t, i) => (
-                        <label key={i} className="task">
-                          <input type="checkbox" checked={t.done} onChange={() => toggle(current.week, i)} />
-                          <span className={t.done ? 'done' : ''}>{t.text}</span>
-                        </label>
-                      ))}
-                      {(current.projects?.length ?? 0) > 0 && (
-                        <div className="deliverables">
-                          <h4>交付物 · 推荐项目</h4>
-                          {current.projects!.map((p) => (
-                            <div key={p.name} className="deliverable">
-                              {p.url
-                                ? <a href={p.url} target="_blank" rel="noreferrer">{p.name}<span aria-hidden="true"> ↗</span></a>
-                                : <b>{p.name}</b>}
-                              {p.deliverable && <div className="deliverable-desc">{p.deliverable}</div>}
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {sel === 'q' && (
-                  <div key="questions" className="panel-fade">
-                    {CATS.map((cat) => {
-                      const group = questions.filter((q) => q.category === cat);
-                      if (!group.length) return null;
-                      return (
-                        <div key={cat} className="card">
-                          <b>{CAT_LABELS[cat]}（{group.length}）</b>
-                          {group.map((q, i) => (
-                            <details key={q.id} className="q">
-                              <summary>{i + 1}. {q.question}</summary>
-                              <p className="hint">提示：{q.hint || '—'}</p>
-                              <button onClick={() => setChatQ(q)}><Icon name="mic" /> 模拟追问</button>
-                            </details>
-                          ))}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </section>
-            </div>
+                  {sel === 'q' && (
+                    <div key="questions" className="panel-fade">
+                      {CATS.map((cat) => {
+                        const group = questions.filter((q) => q.category === cat);
+                        if (!group.length) return null;
+                        return (
+                          <div key={cat} className="card">
+                            <b>{CAT_LABELS[cat]}（{group.length}）</b>
+                            {group.map((q, i) => (
+                              <details key={q.id} className="q">
+                                <summary>{i + 1}. {q.question}</summary>
+                                <p className="hint">提示：{q.hint || '—'}</p>
+                                <button onClick={() => setChatQ(q)}><Icon name="mic" /> 模拟追问</button>
+                              </details>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+              </div>
+
+              <div className="card">
+                <div className="row" style={{ marginTop: 0 }}>
+                  <b className="wide">学习进度总览</b>
+                  <span className="notice">{totalDone}/{totalTasks} 项 · {pct}%</span>
+                </div>
+                <div className="progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="学习进度">
+                  <div className="progress-bar static" style={{ width: `${pct}%` }} />
+                </div>
+                <div className="week-bars">
+                  {weeks.map((w) => {
+                    const done = w.tasks.filter((t) => t.done).length;
+                    const wp = w.tasks.length === 0 ? 0 : Math.round((done / w.tasks.length) * 100);
+                    return (
+                      <div key={w.week} className="week-bar">
+                        <span className="notice">第 {w.week} 周</span>
+                        <div className="bar"><div style={{ width: `${wp}%` }} /></div>
+                        <span className="notice">{done}/{w.tasks.length}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="row" style={{ marginBottom: 0 }}>
+                  <span className="notice">面试预测题 {questions.length} 道 · 已生成 {weeks.length} 周计划</span>
+                  <span className="wide" />
+                  <button onClick={() => setSel('q')}>去练面试题</button>
+                </div>
+              </div>
+            </>
           )}
         </>
       )}
