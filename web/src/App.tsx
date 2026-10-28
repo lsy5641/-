@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import ProfilePage from './pages/ProfilePage';
 import WorkbenchPage from './pages/WorkbenchPage';
 import ExamPage from './pages/ExamPage';
@@ -17,10 +17,22 @@ export default function App() {
   function go(p: Page) {
     if (p === page) return;
     setDir(ORDER.indexOf(p) > ORDER.indexOf(page) ? 'next' : 'prev');
-    setPage(p);
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+    if (typeof doc.startViewTransition === 'function') {
+      doc.startViewTransition(() => { setPage(p); window.scrollTo(0, 0); });
+    } else {
+      setPage(p);
+      window.scrollTo(0, 0);
+    }
   }
 
-  useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [page]);
+  useEffect(() => {
+    if (typeof (document as Document & { startViewTransition?: unknown }).startViewTransition === 'function') {
+      document.documentElement.classList.add('vt');
+    }
+  }, []);
+
+  useLayoutEffect(() => { window.scrollTo(0, 0); }, [page]);
 
   return (
     <div className="app">

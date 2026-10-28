@@ -267,7 +267,8 @@ mark { background: #fff3bf; padding: 0 2px; border-radius: 3px; }
 /* ---------- 备考中心 ---------- */
 .task { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; font-size: 14px; font-weight: 400; color: var(--color-foreground); cursor: pointer; }
 .task input { width: 16px; height: 16px; flex: none; margin-top: 3px; }
-.done { text-decoration: line-through; color: #94a3b8; }
+.task .done { text-decoration: line-through; color: #94a3b8; }
+.step.done, .step.done .step-label, .onboarding-steps li.done, .onboarding-steps li.done span { text-decoration: none; }
 details.q { margin: 8px 0; font-size: 14px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
 details.q summary { cursor: pointer; font-weight: 500; padding: 4px 0; }
 details.q summary:hover { color: var(--color-secondary); }
@@ -461,7 +462,8 @@ button, .step-btn, .step-label, .seg-item, .select-opt, .select-btn { text-decor
 
 .segmented {
   position: relative;
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: repeat(var(--seg-count), minmax(0, 1fr));
   align-self: center;
   padding: 3px;
   background: var(--color-muted);
@@ -470,10 +472,11 @@ button, .step-btn, .step-label, .seg-item, .select-opt, .select-btn { text-decor
 .segmented .seg-item {
   position: relative;
   z-index: 1;
-  flex: 1 1 0;
+  width: 100%;
   min-width: 104px;
   height: 32px;
   padding: 0 18px;
+  justify-content: center;
   border: none;
   border-radius: 999px;
   background: transparent;
@@ -550,3 +553,29 @@ select {
 .jd-pick:hover { border-color: var(--color-secondary); box-shadow: var(--shadow-md); }
 .jd-pick b { font-size: 14px; }
 .jd-pick .jd-pick-title { font-size: 13px; color: var(--color-muted-foreground); }
+
+/* ================= 第六轮：更柔和的过渡 ================= */
+.view { min-height: 42vh; }
+.view-next { animation: slide-next 400ms var(--ease-soft); }
+.view-prev { animation: slide-prev 400ms var(--ease-soft); }
+@keyframes slide-next { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+@keyframes slide-prev { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
+.panel-fade { animation: panel-in 320ms var(--ease-soft); }
+@keyframes panel-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+:root { --ease-soft: cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* 原生 View Transitions（Edge/Chrome）：跨页交叉淡入，避免生硬切换 */
+:root.vt .view { animation: none; }
+::view-transition-old(root) { animation: vt-out 220ms var(--ease-soft) both; }
+::view-transition-new(root) { animation: vt-in 420ms var(--ease-soft) both; }
+@keyframes vt-out { to { opacity: 0; } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.modal { animation: modal-in 300ms var(--ease-soft); }
+@keyframes modal-in { from { opacity: 0; transform: translateY(10px) scale(0.985); } to { opacity: 1; transform: none; } }
+.modal-mask { animation: fade-in 220ms var(--ease-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
+}
