@@ -7,7 +7,11 @@ export default function WorkbenchPage() {
   const [tab, setTab] = useState<'jds' | 'keywords'>('jds');
   return (
     <div className="page">
-      <div className="row">
+      <div className="page-head">
+        <h1>JD 工作台</h1>
+        <span className="sub">粘贴 JD → AI 提词条 → 推荐经历 → 组装定制简历</span>
+      </div>
+      <div className="row no-wrap">
         <button className={tab === 'jds' ? 'tab active' : 'tab'} onClick={() => setTab('jds')}>JD 列表</button>
         <button className={tab === 'keywords' ? 'tab active' : 'tab'} onClick={() => setTab('keywords')}>词条库</button>
       </div>
@@ -55,7 +59,7 @@ function JdsPanel() {
         <div key={j.id} className="card">
           <div className="row">
             <b className="wide">{j.company || '(未填公司)'} · {j.title || '(未填岗位)'}</b>
-            <span>{j.analyzed ? '✅ 已解析' : '⏳ 未解析'}</span>
+            <span className={j.analyzed ? 'badge ok' : 'badge wait'}>{j.analyzed ? '已解析' : '未解析'}</span>
             <button className="primary" onClick={() => analyze(j)} disabled={busyId === j.id}>{busyId === j.id ? 'AI 解析中…' : '解析'}</button>
             <button onClick={() => setOpenId(j.id)}>打开</button>
             <button className="danger" onClick={() => del(j)}>删除</button>

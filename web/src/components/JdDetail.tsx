@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { Jd, Suggestion, ProfileItem } from '../types';
 import ResumePreview from './ResumePreview';
+import Icon from './Icon';
 
 export default function JdDetail({ jdId, onClose, onError }: { jdId: number; onClose: () => void; onError: (m: string) => void }) {
   const [tab, setTab] = useState<'rec' | 'resume' | 'coach'>('rec');
@@ -139,8 +140,8 @@ function CoachPanel({ jd, onError, onRefresh }: { jd: Jd; onError: (m: string) =
                 <div className="new">建议：{s.new_text}</div>
                 <div className="meta">{s.star_label} · {s.reason}</div>
                 <div className="row">
-                  <button className={s.status === 'accepted' ? 'primary' : ''} onClick={() => decide(itemId, run.id, s.bullet_index, s.status === 'accepted' ? 'pending' : 'accepted')}>{s.status === 'accepted' ? '✓ 已采纳' : '采纳'}</button>
-                  <button className={s.status === 'rejected' ? 'danger' : ''} onClick={() => decide(itemId, run.id, s.bullet_index, s.status === 'rejected' ? 'pending' : 'rejected')}>{s.status === 'rejected' ? '✕ 已拒绝' : '拒绝'}</button>
+                  <button className={s.status === 'accepted' ? 'primary' : ''} onClick={() => decide(itemId, run.id, s.bullet_index, s.status === 'accepted' ? 'pending' : 'accepted')}>{s.status === 'accepted' ? <><Icon name="check" /> 已采纳</> : '采纳'}</button>
+                  <button className={s.status === 'rejected' ? 'danger' : ''} onClick={() => decide(itemId, run.id, s.bullet_index, s.status === 'rejected' ? 'pending' : 'rejected')}>{s.status === 'rejected' ? <><Icon name="close" /> 已拒绝</> : '拒绝'}</button>
                 </div>
               </div>
             ))}

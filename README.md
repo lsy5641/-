@@ -51,6 +51,10 @@ npm run dev
    - **定制简历**：点「重新计算关键词命中」看覆盖率与缺失词，点「导出定制简历 JSON」
    - **AI 教练**：对每个条目点「AI 按 JD 优化」，逐条采纳/拒绝；满意后「回填到母版履历」或「存素材库」
 
+## 界面设计规范
+
+视觉规范由 ui-ux-pro-max 生成，见 `design-system/jobcoach/MASTER.md`（Minimalism/Swiss · 海军蓝 #1E3A5F · Plus Jakarta Sans）。
+
 ## 安全提醒
 
 - 项目目录里 `data/` 含你的个人信息与 AI 配置，**不要上传网盘共享或发给别人**
