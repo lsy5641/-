@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { ProfileItem, Section, SECTIONS, SECTION_LABELS } from '../types';
 import ItemCard from '../components/ItemCard';
@@ -6,6 +6,7 @@ import MaterialsPanel from '../components/MaterialsPanel';
 import BulletsWizard from '../components/BulletsWizard';
 import { SkeletonCards } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
+import Segmented from '../components/Segmented';
 
 export default function ProfilePage({ onNavigate }: { onNavigate?: (p: 'workbench' | 'exam') => void }) {
   const [tab, setTab] = useState<'items' | 'materials'>('items');
@@ -66,13 +67,15 @@ export default function ProfilePage({ onNavigate }: { onNavigate?: (p: 'workbenc
         </div>
       )}
 
-      <div className="row no-wrap">
-        <button className={tab === 'items' ? 'tab active' : 'tab'} onClick={() => setTab('items')}>履历条目</button>
-        <button className={tab === 'materials' ? 'tab active' : 'tab'} onClick={() => setTab('materials')}>素材库</button>
-      </div>
+      <Segmented
+        ariaLabel="履历视图切换"
+        value={tab}
+        onChange={setTab}
+        options={[{ key: 'items', label: '履历条目' }, { key: 'materials', label: '素材库' }]}
+      />
 
       {tab === 'items' ? (
-        <div key="items" className="panel-fade">
+        <div key="items" className="panel-fade stack">
           <p className="notice">在这里持续积累你的所有经历，写得越具体，AI 越能帮你改好。</p>
 
           {loading ? (
@@ -106,7 +109,7 @@ export default function ProfilePage({ onNavigate }: { onNavigate?: (p: 'workbenc
           )}
         </div>
       ) : (
-        <div key="materials" className="panel-fade">
+        <div key="materials" className="panel-fade stack">
           <MaterialsPanel onError={setError} />
         </div>
       )}
