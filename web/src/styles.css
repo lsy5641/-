@@ -579,3 +579,26 @@ select {
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
 }
+
+/* ================= 第七轮：纯交叉淡入（无位移）+ 放慢节奏 ================= */
+@keyframes fade-soft { from { opacity: 0; } to { opacity: 1; } }
+
+.view-next, .view-prev { animation: fade-soft 520ms var(--ease-soft); }
+
+.panel-fade { animation: fade-soft 420ms var(--ease-soft); }
+
+.modal { animation: fade-soft 380ms var(--ease-soft); }
+.modal-mask { animation: fade-soft 300ms var(--ease-soft); }
+.select-menu { animation: fade-soft 220ms var(--ease-soft); }
+
+/* 原生 View Transitions 也改为纯淡入淡出 */
+::view-transition-old(root) { animation: vt-fade-out 340ms var(--ease-soft) both; }
+::view-transition-new(root) { animation: vt-fade-in 560ms var(--ease-soft) both; }
+@keyframes vt-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes vt-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* 交互反馈也放慢一点 */
+.seg-thumb { transition-duration: 420ms; }
+button { transition-duration: 240ms; }
+input, textarea, select { transition-duration: 220ms; }
+.card { transition-duration: 300ms; }
