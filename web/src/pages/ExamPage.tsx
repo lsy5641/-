@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { Jd, PlanWeek, ExamQuestion } from '../types';
 import MockChat from '../components/MockChat';
 import Icon from '../components/Icon';
 import { SkeletonCards } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
+import Select from '../components/Select';
 
 const CAT_LABELS: Record<string, string> = { project_deep: '项目深挖', tech: '技术题', behavioral: '行为题 (STAR)', hr: 'HR 题' };
 const CATS = ['project_deep', 'tech', 'behavioral', 'hr'];
@@ -20,7 +21,6 @@ export default function ExamPage({ onNavigate }: { onNavigate?: (p: 'profile' | 
   const [msg, setMsg] = useState('');
   const [sel, setSel] = useState<number | 'q'>('q');
   const [chatQ, setChatQ] = useState<ExamQuestion | null>(null);
-  const jdRef = useRef<HTMLSelectElement>(null);
 
   useEffect(() => {
     api.listJds().then((list: Jd[]) => {
@@ -90,9 +90,15 @@ export default function ExamPage({ onNavigate }: { onNavigate?: (p: 'profile' | 
         <>
           <div className="row">
             <b>选择 JD：</b>
-            <select ref={jdRef} style={{ width: 'auto', minWidth: 220 }} value={jdId ?? ''} onChange={(e) => setJdId(Number(e.target.value))}>
-              {jds.map((j) => <option key={j.id} value={j.id}>{j.company} · {j.title}</option>)}
-            </select>
+            <div style={{ width: 300 }}>
+              <Select
+                ariaLabel="选择 JD"
+                value={jdId ? String(jdId) : ''}
+                onChange={(v) => setJdId(Number(v))}
+                placeholder="请选择 JD"
+                options={jds.map((j) => ({ value: String(j.id), label: `${j.company || '(未填公司)'} · ${j.title || '(未填岗位)'}` }))}
+              />
+            </div>
             <button className="primary" onClick={generate} disabled={busy || !jdId}>{busy ? `生成中 ${elapsed}s` : hasPlan ? '重新生成备考包' : '生成备考包'}</button>
             <button onClick={exportMd} disabled={!hasPlan}>导出 Markdown</button>
             {totalTasks > 0 && <span className="notice">总进度 {totalDone}/{totalTasks}</span>}

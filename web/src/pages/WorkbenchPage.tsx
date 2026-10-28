@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { Jd, Keyword, CAT_LABELS } from '../types';
 import JdDetail from '../components/JdDetail';
 import { SkeletonCards } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
+import Segmented from '../components/Segmented';
 
 export default function WorkbenchPage() {
   const [tab, setTab] = useState<'jds' | 'keywords'>('jds');
@@ -13,10 +14,12 @@ export default function WorkbenchPage() {
         <h1>JD 工作台</h1>
         <span className="sub">粘贴 JD → AI 提词条 → 推荐经历 → 组装定制简历</span>
       </div>
-      <div className="row no-wrap">
-        <button className={tab === 'jds' ? 'tab active' : 'tab'} onClick={() => setTab('jds')}>JD 列表</button>
-        <button className={tab === 'keywords' ? 'tab active' : 'tab'} onClick={() => setTab('keywords')}>词条库</button>
-      </div>
+      <Segmented
+        ariaLabel="工作台视图切换"
+        value={tab}
+        onChange={setTab}
+        options={[{ key: 'jds', label: 'JD 列表' }, { key: 'keywords', label: '词条库' }]}
+      />
       {tab === 'jds' ? <div key="jds" className="panel-fade"><JdsPanel /></div> : <div key="kw" className="panel-fade"><KeywordsPanel /></div>}
     </div>
   );
@@ -57,7 +60,7 @@ function JdsPanel() {
   }
 
   return (
-    <div>
+    <div className="stack">
       {err && <div className="toast toast-err" role="alert">{err}<button onClick={() => setErr('')} aria-label="关闭提示">×</button></div>}
       <div className="card">
         <div className="row">
@@ -126,7 +129,7 @@ function KeywordsPanel() {
   async function del(k: Keyword) { if (!confirm(`删除词条「${k.term}」？`)) return; try { await api.deleteKeyword(k.id); refresh(); } catch (e) { setErr((e as Error).message); } }
 
   return (
-    <div>
+    <div className="stack">
       {err && <div className="toast toast-err" role="alert">{err}<button onClick={() => setErr('')} aria-label="关闭提示">×</button></div>}
       <div className="card row">
         <input className="wide" placeholder="手动添加词条，如 Python" value={term} onChange={e => setTerm(e.target.value)} />
