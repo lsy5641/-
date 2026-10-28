@@ -372,3 +372,84 @@ details.q summary:hover { color: var(--color-secondary); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ================= 第三轮：骨架 / 空态 / 步骤条 / 进度 / 引导 ================= */
+.snippet { font-size: 12.5px; color: #64748b; margin-top: 2px; line-height: 1.5; }
+
+.skip-link {
+  position: absolute; left: -9999px; top: 8px; z-index: 100;
+  padding: 8px 14px; border-radius: 8px; background: var(--color-primary); color: #fff; text-decoration: none;
+}
+.skip-link:focus { left: 12px; }
+
+.sk-line {
+  height: 12px; border-radius: 6px; margin: 10px 0;
+  background: linear-gradient(90deg, #eef2f7 25%, #f8fafc 37%, #eef2f7 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+.sk-card { box-shadow: none; }
+
+.empty {
+  text-align: center; padding: 44px 20px;
+  border: 1px dashed var(--color-border); border-radius: var(--radius-lg);
+  background: #fff;
+}
+.empty-mark {
+  width: 46px; height: 46px; border-radius: 13px; margin: 0 auto 12px;
+  display: grid; place-items: center;
+  background: var(--color-muted); color: var(--color-primary);
+}
+.empty h3 { font-size: 16px; }
+.empty p { color: var(--color-muted-foreground); font-size: 13px; max-width: 480px; margin: 8px auto 16px; }
+.empty-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+.stepper { display: flex; align-items: center; list-style: none; padding: 0; margin: 16px 0 8px; }
+.step { display: flex; align-items: center; }
+.step-btn { background: transparent; border: none; box-shadow: none; height: 34px; padding: 0 6px; gap: 8px; color: var(--color-muted-foreground); }
+.step-btn:hover { background: transparent; color: var(--color-foreground); }
+.step-dot {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+  background: var(--color-muted); color: #64748b;
+}
+.step.current .step-dot { background: var(--color-primary); color: #fff; }
+.step.done .step-dot { background: var(--color-accent); color: #fff; }
+.step.current .step-label { color: var(--color-foreground); font-weight: 600; }
+.step-label { font-size: 14px; }
+.step-line { width: 26px; height: 2px; background: #e2e8f0; margin: 0 2px; }
+.step.done .step-line { background: #bbe8ca; }
+
+.progress { height: 6px; background: #e9eef5; border-radius: 999px; overflow: hidden; margin: 12px 0 6px; }
+.progress-bar {
+  height: 100%; width: 36%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-secondary), var(--color-primary));
+  animation: indeterminate 1.3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes indeterminate { 0% { margin-left: -36%; } 100% { margin-left: 100%; } }
+
+.onboarding { background: linear-gradient(180deg, #ffffff, #f8fbff); border-color: #dbe7f7; }
+.onboarding-steps { list-style: none; padding: 0; margin: 10px 0 14px; }
+.onboarding-steps li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; font-size: 14px; color: #334155; }
+.onboarding-steps li > span {
+  width: 20px; height: 20px; border-radius: 50%; flex: none; margin-top: 2px;
+  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+  background: var(--color-muted); color: #475569;
+}
+.onboarding-steps li.done > span { background: var(--color-accent); color: #fff; }
+
+.next-step { font-size: 12.5px; color: #5b6b82; background: #f4f7fb; border-radius: 8px; padding: 6px 10px; margin: 10px 0 0; }
+
+@media (max-width: 640px) {
+  .topnav nav { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+  .topnav nav::-webkit-scrollbar { display: none; }
+  .row > input, .row > select { flex: 1 1 100%; max-width: 100% !important; }
+  .period-input { width: 100% !important; }
+  .modal-mask { padding: 0; align-items: flex-end; }
+  .modal { border-radius: 16px 16px 0 0; max-height: 92vh; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); }
+  .stepper { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+  .stepper::-webkit-scrollbar { display: none; }
+  .chat-box { max-height: 44vh; }
+  .page-head h1 { font-size: 19px; }
+}

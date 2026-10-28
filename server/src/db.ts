@@ -1,8 +1,8 @@
-import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
+﻿import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const SECTIONS = ['work', 'project', 'education', 'skill', 'award'] as const;
+export const SECTIONS = ['education', 'work', 'project', 'skill', 'award'] as const;
 export type Section = (typeof SECTIONS)[number];
 
 export function nowIso(): string { return new Date().toISOString(); }

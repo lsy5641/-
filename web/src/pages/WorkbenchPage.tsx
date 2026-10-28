@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { Jd, Keyword, CAT_LABELS } from '../types';
 import JdDetail from '../components/JdDetail';
+import { SkeletonCards } from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
 
 export default function WorkbenchPage() {
   const [tab, setTab] = useState<'jds' | 'keywords'>('jds');
@@ -22,14 +24,18 @@ export default function WorkbenchPage() {
 
 function JdsPanel() {
   const [jds, setJds] = useState<Jd[]>([]);
+  const [loading, setLoading] = useState(true);
   const [company, setCompany] = useState('');
   const [title, setTitle] = useState('');
   const [raw, setRaw] = useState('');
   const [busyId, setBusyId] = useState<number | null>(null);
   const [err, setErr] = useState('');
   const [openId, setOpenId] = useState<number | null>(null);
+  const rawRef = useRef<HTMLTextAreaElement>(null);
 
-  async function refresh() { try { setJds(await api.listJds()); } catch (e) { setErr((e as Error).message); } }
+  async function refresh() {
+    try { setJds(await api.listJds()); } catch (e) { setErr((e as Error).message); } finally { setLoading(false); }
+  }
   useEffect(() => { refresh(); }, []);
 
   async function add() {
@@ -44,34 +50,57 @@ function JdsPanel() {
   }
   async function del(j: Jd) { if (!confirm(`删除 JD「${j.company} ${j.title}」？`)) return; try { await api.deleteJd(j.id); refresh(); } catch (e) { setErr((e as Error).message); } }
 
+  function nextStep(j: Jd): string {
+    if (!j.analyzed) return '下一步：点「解析」，让 AI 提取要求与词条';
+    if (!(j.chosen_items?.length > 0)) return '下一步：点「打开」，勾选要进这份简历的经历';
+    return '下一步：在弹窗里查看定制简历、做 AI 改写';
+  }
+
   return (
     <div>
-      {err && <div className="toast toast-err">{err}<button onClick={() => setErr('')}>×</button></div>}
+      {err && <div className="toast toast-err" role="alert">{err}<button onClick={() => setErr('')} aria-label="关闭提示">×</button></div>}
       <div className="card">
         <div className="row">
-          <input placeholder="公司" value={company} onChange={e => setCompany(e.target.value)} />
-          <input placeholder="岗位" value={title} onChange={e => setTitle(e.target.value)} />
+          <input placeholder="公司" value={company} onChange={e => setCompany(e.target.value)} style={{ maxWidth: 220 }} />
+          <input placeholder="岗位" value={title} onChange={e => setTitle(e.target.value)} style={{ maxWidth: 220 }} />
         </div>
-        <textarea className="wide" rows={6} placeholder="粘贴 JD 原文（至少30字），保存后点『解析』由 AI 提取要求要点与词条" value={raw} onChange={e => setRaw(e.target.value)} />
-        <div className="row"><button className="primary" onClick={add}>+ 保存 JD</button></div>
+        <textarea className="wide" rows={6} ref={rawRef} placeholder="粘贴 JD 原文（至少30字），保存后点「解析」由 AI 提取要求要点与词条" value={raw} onChange={e => setRaw(e.target.value)} />
+        <div className="row" style={{ marginBottom: 0 }}><button className="primary" onClick={add}>+ 保存 JD</button></div>
       </div>
-      {jds.map(j => (
-        <div key={j.id} className="card">
-          <div className="row">
-            <b className="wide">{j.company || '(未填公司)'} · {j.title || '(未填岗位)'}</b>
-            <span className={j.analyzed ? 'badge ok' : 'badge wait'}>{j.analyzed ? '已解析' : '未解析'}</span>
-            <button className="primary" onClick={() => analyze(j)} disabled={busyId === j.id}>{busyId === j.id ? 'AI 解析中…' : '解析'}</button>
-            <button onClick={() => setOpenId(j.id)}>打开</button>
-            <button className="danger" onClick={() => del(j)}>删除</button>
-          </div>
-          {j.analyzed === 1 && (
-            <div className="jd-detail">
-              <p><b>要求：</b>{j.summary.requirements.join('；') || '—'}</p>
-              <p><b>职责：</b>{j.summary.responsibilities.join('；') || '—'}</p>
-            </div>
+
+      {loading ? <SkeletonCards count={2} /> : (
+        <>
+          {jds.length === 0 && (
+            <EmptyState title="还没有 JD" desc="复制你想投的职位描述粘贴到上面的输入框，保存后点「解析」。" icon="doc">
+              <button className="primary" onClick={() => rawRef.current?.focus()}>去粘贴 JD</button>
+            </EmptyState>
           )}
-        </div>
-      ))}
+          {jds.map(j => {
+            const chosen = j.chosen_items?.length ?? 0;
+            const rewritten = Object.keys(j.overrides ?? {}).length;
+            return (
+              <div key={j.id} className="card">
+                <div className="row" style={{ marginTop: 0 }}>
+                  <b className="wide">{j.company || '(未填公司)'} · {j.title || '(未填岗位)'}</b>
+                  <span className={j.analyzed ? 'badge ok' : 'badge wait'}>{j.analyzed ? '已解析' : '待解析'}</span>
+                  {chosen > 0 && <span className="badge ok">已选 {chosen} 条经历</span>}
+                  {rewritten > 0 && <span className="badge ok">已改写 {rewritten} 条</span>}
+                  <button className="primary" onClick={() => analyze(j)} disabled={busyId === j.id}>{busyId === j.id ? 'AI 解析中…' : '解析'}</button>
+                  <button onClick={() => setOpenId(j.id)}>打开</button>
+                  <button className="danger" onClick={() => del(j)}>删除</button>
+                </div>
+                {j.analyzed === 1 && (
+                  <div className="jd-detail">
+                    <p><b>要求：</b>{j.summary.requirements.join('；') || '—'}</p>
+                    <p><b>职责：</b>{j.summary.responsibilities.join('；') || '—'}</p>
+                  </div>
+                )}
+                <p className="next-step">{nextStep(j)}</p>
+              </div>
+            );
+          })}
+        </>
+      )}
       {openId !== null && <JdDetail jdId={openId} onClose={() => setOpenId(null)} onError={setErr} />}
     </div>
   );
@@ -79,11 +108,14 @@ function JdsPanel() {
 
 function KeywordsPanel() {
   const [rows, setRows] = useState<Keyword[]>([]);
+  const [loading, setLoading] = useState(true);
   const [term, setTerm] = useState('');
   const [category, setCategory] = useState('hard_skill');
   const [err, setErr] = useState('');
 
-  async function refresh() { try { setRows(await api.listKeywords()); } catch (e) { setErr((e as Error).message); } }
+  async function refresh() {
+    try { setRows(await api.listKeywords()); } catch (e) { setErr((e as Error).message); } finally { setLoading(false); }
+  }
   useEffect(() => { refresh(); }, []);
 
   async function add() {
@@ -95,29 +127,32 @@ function KeywordsPanel() {
 
   return (
     <div>
-      {err && <div className="toast toast-err">{err}<button onClick={() => setErr('')}>×</button></div>}
+      {err && <div className="toast toast-err" role="alert">{err}<button onClick={() => setErr('')} aria-label="关闭提示">×</button></div>}
       <div className="card row">
         <input className="wide" placeholder="手动添加词条，如 Python" value={term} onChange={e => setTerm(e.target.value)} />
-        <select value={category} onChange={e => setCategory(e.target.value)}>{Object.entries(CAT_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+        <select style={{ width: 'auto' }} value={category} onChange={e => setCategory(e.target.value)}>{Object.entries(CAT_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
         <button className="primary" onClick={add}>+ 添加</button>
       </div>
-      <div className="card">
-        <table className="kw-table">
-          <thead><tr><th>词条</th><th>类别</th><th>总频次</th><th>出现JD数</th><th>备注</th><th></th></tr></thead>
-          <tbody>
-            {rows.map(k => (
-              <tr key={k.id}>
-                <td><b>{k.term}</b></td>
-                <td><select value={k.category} onChange={e => upd(k, { category: e.target.value })}>{Object.entries(CAT_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></td>
-                <td>{k.totalFrequency}</td><td>{k.jdCount}</td>
-                <td><input defaultValue={k.note} onBlur={e => e.target.value !== k.note && upd(k, { note: e.target.value })} /></td>
-                <td><button className="danger" onClick={() => del(k)}>删</button></td>
-              </tr>
-            ))}
-            {rows.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: '#888' }}>还没有词条——去「JD 列表」粘贴一个 JD 点解析</td></tr>}
-          </tbody>
-        </table>
-      </div>
+      {loading ? <SkeletonCards count={1} /> : rows.length === 0 ? (
+        <EmptyState title="还没有词条" desc="去「JD 列表」粘贴一个 JD 点「解析」，AI 会自动提取词条并合并统计。" icon="spark" />
+      ) : (
+        <div className="card">
+          <table className="kw-table">
+            <thead><tr><th>词条</th><th>类别</th><th>总频次</th><th>出现JD数</th><th>备注</th><th></th></tr></thead>
+            <tbody>
+              {rows.map(k => (
+                <tr key={k.id}>
+                  <td><b>{k.term}</b></td>
+                  <td><select value={k.category} onChange={e => upd(k, { category: e.target.value })}>{Object.entries(CAT_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></td>
+                  <td>{k.totalFrequency}</td><td>{k.jdCount}</td>
+                  <td><input defaultValue={k.note} onBlur={e => e.target.value !== k.note && upd(k, { note: e.target.value })} /></td>
+                  <td><button className="danger" onClick={() => del(k)}>删</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

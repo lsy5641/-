@@ -18,6 +18,12 @@ export default function MockChat({ question, onClose, onError }: { question: Exa
     if (boxRef.current) boxRef.current.scrollTop = boxRef.current.scrollHeight;
   }, [messages, busy]);
 
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   async function send() {
     const text = input.trim();
     if (!text || busy) return;

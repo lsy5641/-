@@ -3,7 +3,7 @@ import { api } from '../api';
 import { ResumeItemView, MatchResult, SECTION_LABELS, Section, Keyword } from '../types';
 import Icon from './Icon';
 
-const GROUPS: Section[] = ['work', 'project', 'education', 'skill', 'award'];
+const GROUPS: Section[] = ['education', 'work', 'project', 'skill', 'award'];
 
 export default function ResumePreview({ jdId }: { jdId: number }) {
   const [items, setItems] = useState<ResumeItemView[]>([]);

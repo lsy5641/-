@@ -1,7 +1,7 @@
-export type Section = 'work' | 'project' | 'education' | 'skill' | 'award';
-export const SECTIONS: Section[] = ['work', 'project', 'education', 'skill', 'award'];
+﻿export type Section = 'work' | 'project' | 'education' | 'skill' | 'award';
+export const SECTIONS: Section[] = ['education', 'work', 'project', 'skill', 'award'];
 export const SECTION_LABELS: Record<Section, string> = {
-  work: '工作经历', project: '项目经历', education: '教育背景', skill: '技能特长', award: '荣誉奖项',
+  education: '教育背景', work: '工作经历', project: '项目经历', skill: '技能特长', award: '荣誉奖项',
 };
 export interface ProfileItem {
   id: number; section: Section; heading: string; period: string;
