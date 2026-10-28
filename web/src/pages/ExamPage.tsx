@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { Jd, PlanWeek, ExamQuestion } from '../types';
 import MockChat from '../components/MockChat';
+import Icon from '../components/Icon';
 
 const CAT_LABELS: Record<string, string> = { project_deep: '项目深挖', tech: '技术题', behavioral: '行为题 (STAR)', hr: 'HR 题' };
 const CATS = ['project_deep', 'tech', 'behavioral', 'hr'];
@@ -51,6 +52,10 @@ export default function ExamPage() {
 
   return (
     <div className="page">
+      <div className="page-head">
+        <h1>备考中心</h1>
+        <span className="sub">针对选中的 JD 生成学习计划与面试预测题</span>
+      </div>
       <div className="row">
         <b>选择 JD：</b>
         <select value={jdId ?? ''} onChange={(e) => setJdId(Number(e.target.value))}>
@@ -83,7 +88,7 @@ export default function ExamPage() {
                   <details key={q.id} className="q">
                     <summary>{i + 1}. {q.question}</summary>
                     <p className="hint">提示：{q.hint || '—'}</p>
-                    <button onClick={() => setChatQ(q)}>🎤 模拟追问</button>
+                    <button onClick={() => setChatQ(q)}><Icon name="mic" /> 模拟追问</button>
                   </details>
                 ))}
               </div>

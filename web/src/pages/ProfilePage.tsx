@@ -24,20 +24,25 @@ export default function ProfilePage() {
 
   return (
     <div className="page">
-      {error && <div className="toast toast-err">{error}<button onClick={() => setError('')}>×</button></div>}
-      <div className="row">
+      {error && <div className="toast toast-err" role="alert">{error}<button onClick={() => setError('')} aria-label="关闭提示">×</button></div>}
+      <div className="page-head">
+        <h1>个人履历</h1>
+        <span className="sub">终身履历 · 每次保存自动留版本</span>
+      </div>
+      <div className="row no-wrap">
         <button className={tab === 'items' ? 'tab active' : 'tab'} onClick={() => setTab('items')}>履历条目</button>
         <button className={tab === 'materials' ? 'tab active' : 'tab'} onClick={() => setTab('materials')}>素材库</button>
       </div>
       {tab === 'items' ? (
         <>
-          <p>在这里持续积累你的所有经历（终身履历）。每个条目保存即留版本，可随时回退。</p>
+          <p className="notice">在这里持续积累你的所有经历，写得越具体，AI 越能帮你改好。录入后可用「AI 拆亮点」把流水账变成 STAR 亮点。</p>
           <BulletsWizard onDone={refresh} onError={setError} />
           {SECTIONS.map(sec => (
             <section key={sec} className="sec-group">
               <div className="sec-head">
                 <h2>{SECTION_LABELS[sec]}</h2>
-                <button onClick={() => add(sec)} disabled={busy}>+ 新增</button>
+                {items.filter(i => i.section === sec).length > 0 && <span className="count">{items.filter(i => i.section === sec).length}</span>}
+                <button onClick={() => add(sec)} disabled={busy} aria-label={`新增${SECTION_LABELS[sec]}`}>+ 新增</button>
               </div>
               {items.filter(i => i.section === sec).map(it => (
                 <ItemCard key={it.id} item={it} onChanged={refresh} onError={setError} />
