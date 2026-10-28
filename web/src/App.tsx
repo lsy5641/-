@@ -4,6 +4,7 @@ import WorkbenchPage from './pages/WorkbenchPage';
 import ExamPage from './pages/ExamPage';
 import SettingsModal from './components/SettingsModal';
 import Icon from './components/Icon';
+import Logo from './components/Logo';
 
 type Page = 'profile' | 'workbench' | 'exam';
 const ORDER: Page[] = ['profile', 'workbench', 'exam'];
@@ -39,8 +40,8 @@ export default function App() {
       <a className="skip-link" href="#main">跳到主内容</a>
       <header className="topnav">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true">J</span>
-          <span>JobCoach<span className="brand-sub"> 求职助手</span></span>
+          <Logo size={40} />
+          <span className="brand-name">JobCoach<span className="brand-sub">求职助手</span></span>
         </div>
         <nav aria-label="主导航">
           {(Object.keys(LABELS) as Page[]).map(p => (
