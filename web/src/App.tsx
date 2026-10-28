@@ -8,7 +8,7 @@ import Logo from './components/Logo';
 
 type Page = 'profile' | 'workbench' | 'exam';
 const ORDER: Page[] = ['profile', 'workbench', 'exam'];
-const LABELS: Record<Page, string> = { profile: '① 个人履历', workbench: '② JD 工作台', exam: '③ 备考中心' };
+const LABELS: Record<Page, string> = { profile: '个人履历', workbench: 'JD 工作台', exam: '备考中心' };
 
 export default function App() {
   const [page, setPage] = useState<Page>('profile');
@@ -44,8 +44,10 @@ export default function App() {
           <span className="brand-name">JobCoach<span className="brand-sub">求职助手</span></span>
         </div>
         <nav aria-label="主导航">
-          {(Object.keys(LABELS) as Page[]).map(p => (
-            <button key={p} className={p === page ? 'tab active' : 'tab'} aria-current={p === page ? 'page' : undefined} onClick={() => go(p)}>{LABELS[p]}</button>
+          {(Object.keys(LABELS) as Page[]).map((p, i) => (
+            <button key={p} className={p === page ? 'tab active' : 'tab'} aria-current={p === page ? 'page' : undefined} onClick={() => go(p)}>
+              <span className="nav-step" aria-hidden="true">{i + 1}</span>{LABELS[p]}
+            </button>
           ))}
         </nav>
         <span className="wide" />

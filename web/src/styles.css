@@ -597,3 +597,26 @@ select {
 button { transition-duration: 240ms; }
 input, textarea, select { transition-duration: 220ms; }
 .card { transition-duration: 300ms; }
+
+/* ================= 第八轮：导航数字 / 面试题间距 ================= */
+.nav-step {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 2px;
+  border-radius: 50%;
+  background: #dfe6ef;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.tab.active .nav-step { background: rgba(255, 255, 255, 0.22); color: #fff; }
+
+.q-stack { display: flex; flex-direction: column; gap: 20px; }
+.q-stack .card { padding: 18px 20px; }
+details.q { padding: 12px 2px; border-bottom: 1px solid #f1f5f9; }
+details.q:last-child { border-bottom: none; }
+details.q + details.q { margin-top: 4px; }

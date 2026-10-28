@@ -194,7 +194,7 @@ export default function ExamPage({ onNavigate }: { onNavigate?: (p: 'profile' | 
                   )}
 
                   {sel === 'q' && (
-                    <div key="questions" className="panel-fade">
+                    <div key="questions" className="panel-fade q-stack">
                       {CATS.map((cat) => {
                         const group = questions.filter((q) => q.category === cat);
                         if (!group.length) return null;
