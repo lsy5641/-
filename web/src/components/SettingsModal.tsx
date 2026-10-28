@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { api } from '../api';
 
 const PRESETS: Record<string, { baseUrl: string; model: string }> = {
   'DeepSeek': { baseUrl: 'https://api.deepseek.com', model: 'deepseek-chat' },
   'Kimi': { baseUrl: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-8k' },
   '智谱': { baseUrl: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-flash' },
-  '通义': { baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus' },
+  '通义千问': { baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus' },
   'Ollama本地': { baseUrl: 'http://localhost:11434/v1', model: 'qwen2.5:14b' },
 };
 
@@ -55,6 +55,9 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
             <button key={p} onClick={() => { setBaseUrl(PRESETS[p].baseUrl); setModel(PRESETS[p].model); }}>{p}</button>
           ))}
         </div>
+        <p className="notice" style={{ fontSize: 12, margin: '2px 0 10px' }}>
+          通义千问：在阿里云百炼控制台（bailian.console.aliyun.com）创建 API-KEY；模型可选 qwen-plus / qwen-max / qwen-turbo。
+        </p>
         <label>Base URL <input value={baseUrl} onChange={e => setBaseUrl(e.target.value)} /></label>
         <label>API Key（{keyMask ? `已配置 ${keyMask}，留空则不修改` : '未配置'}）
           <input type="password" value={apiKey} placeholder={keyMask || 'sk-…'} onChange={e => setApiKey(e.target.value)} />
