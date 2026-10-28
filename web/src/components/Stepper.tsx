@@ -16,7 +16,6 @@ export default function Stepper({ steps, current, onSelect }: {
               <span className="step-dot" aria-hidden="true">{i + 1}</span>
               <span className="step-label">{s.label}</span>
             </button>
-            {i < steps.length - 1 && <span className="step-line" aria-hidden="true" />}
           </li>
         );
       })}

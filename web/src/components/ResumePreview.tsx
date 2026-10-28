@@ -5,7 +5,7 @@ import Icon from './Icon';
 
 const GROUPS: Section[] = ['education', 'work', 'project', 'skill', 'award'];
 
-export default function ResumePreview({ jdId }: { jdId: number }) {
+export default function ResumePreview({ jdId, mode = 'assemble' }: { jdId: number; mode?: 'assemble' | 'export' }) {
   const [items, setItems] = useState<ResumeItemView[]>([]);
   const [match, setMatch] = useState<MatchResult | null>(null);
   const [kws, setKws] = useState<Keyword[]>([]);
@@ -64,21 +64,31 @@ export default function ResumePreview({ jdId }: { jdId: number }) {
 
   return (
     <div>
-      {err && <div className="toast toast-err">{err}<button onClick={() => setErr('')}>×</button></div>}
-      <div className="row">
-        <button className="primary" onClick={runMatch} disabled={busy}>{busy ? '计算中…' : '重新计算关键词命中'}</button>
-        <button onClick={exportJson}><Icon name="doc" /> 导出 JSON</button>
-        <button onClick={() => window.open(`/api/export/docx/${jdId}`, '_blank')}><Icon name="download" /> 导出 Word</button>
-        <button onClick={() => window.print()}><Icon name="printer" /> 打印 / 存为 PDF</button>
-        <span className="wide" />
-        {match && <span>覆盖率 {match.coveragePct}%（{match.hits.length}/{match.total}）</span>}
-      </div>
-      {match && match.missing.length > 0 && (
-        <div className="card">
-          <b>JD 要求但简历未体现的词条（{match.missing.length}）：</b>
-          <div className="row" style={{ flexWrap: 'wrap' }}>{match.missing.map((m) => <span key={m} className="tag tag-miss">{m}</span>)}</div>
+      {err && <div className="toast toast-err" role="alert">{err}<button onClick={() => setErr('')} aria-label="关闭提示">×</button></div>}
+
+      {mode === 'assemble' ? (
+        <div className="row">
+          <button className="primary" onClick={runMatch} disabled={busy}>{busy ? '计算中…' : '计算关键词命中率'}</button>
+          <span className="wide" />
+          {match && <span className="notice">覆盖率 {match.coveragePct}%（{match.hits.length}/{match.total}）</span>}
+        </div>
+      ) : (
+        <div className="row">
+          <button onClick={exportJson}><Icon name="doc" /> 导出 JSON</button>
+          <button onClick={() => window.open(`/api/export/docx/${jdId}`, '_blank')}><Icon name="download" /> 导出 Word</button>
+          <button onClick={() => window.print()}><Icon name="printer" /> 打印 / 存为 PDF</button>
+          <span className="wide" />
+          {match && <span className="notice">覆盖率 {match.coveragePct}%</span>}
         </div>
       )}
+
+      {mode === 'assemble' && match && match.missing.length > 0 && (
+        <div className="card">
+          <b>JD 要求但简历未体现的词条（{match.missing.length}）：</b>
+          <div className="row" style={{ flexWrap: 'wrap', marginBottom: 0 }}>{match.missing.map((m) => <span key={m} className="tag tag-miss">{m}</span>)}</div>
+        </div>
+      )}
+
       <div className="card resume-paper">
         {GROUPS.map((g) => {
           const its = items.filter((i) => i.section === g);
@@ -97,7 +107,8 @@ export default function ResumePreview({ jdId }: { jdId: number }) {
         })}
         {items.length === 0 && <p style={{ color: '#888' }}>还没有选择经历——先去「① 推荐经历」勾选几条</p>}
       </div>
-      {kws.length === 0 && <p style={{ color: '#888', fontSize: 13 }}>提示：词条为空，先在 JD 列表点「解析」生成词条，命中率才有意义</p>}
+
+      {mode === 'assemble' && kws.length === 0 && <p className="notice">提示：词条为空，先在 JD 列表点「解析」生成词条，命中率才有意义</p>}
     </div>
   );
 }

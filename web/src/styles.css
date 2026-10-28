@@ -405,7 +405,7 @@ details.q summary:hover { color: var(--color-secondary); }
 .empty p { color: var(--color-muted-foreground); font-size: 13px; max-width: 480px; margin: 8px auto 16px; }
 .empty-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
-.stepper { display: flex; align-items: center; list-style: none; padding: 0; margin: 16px 0 8px; }
+.stepper { display: flex; align-items: center; justify-content: center; gap: 10px; list-style: none; padding: 0; margin: 16px 0 8px; flex-wrap: wrap; }
 .step { display: flex; align-items: center; }
 .step-btn { background: transparent; border: none; box-shadow: none; height: 34px; padding: 0 6px; gap: 8px; color: var(--color-muted-foreground); }
 .step-btn:hover { background: transparent; color: var(--color-foreground); }
@@ -418,8 +418,6 @@ details.q summary:hover { color: var(--color-secondary); }
 .step.done .step-dot { background: var(--color-accent); color: #fff; }
 .step.current .step-label { color: var(--color-foreground); font-weight: 600; }
 .step-label { font-size: 14px; }
-.step-line { width: 26px; height: 2px; background: #e2e8f0; margin: 0 2px; }
-.step.done .step-line { background: #bbe8ca; }
 
 .progress { height: 6px; background: #e9eef5; border-radius: 999px; overflow: hidden; margin: 12px 0 6px; }
 .progress-bar {
@@ -464,7 +462,7 @@ button, .step-btn, .step-label, .seg-item, .select-opt, .select-btn { text-decor
 .segmented {
   position: relative;
   display: inline-flex;
-  align-self: flex-start;
+  align-self: center;
   padding: 3px;
   background: var(--color-muted);
   border-radius: 999px;
@@ -534,3 +532,21 @@ select {
   background-repeat: no-repeat;
   background-position: right 10px center;
 }
+/* ================= 第五轮：总览 / JD 选择卡 ================= */
+.progress-bar.static { width: 0; animation: none; transition: width 320ms var(--ease); }
+
+.week-bars { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 16px; }
+.week-bar { display: grid; grid-template-columns: 64px 1fr 48px; align-items: center; gap: 10px; }
+.week-bar .bar { height: 6px; background: #eef2f7; border-radius: 999px; overflow: hidden; }
+.week-bar .bar > div { height: 100%; background: var(--color-secondary); border-radius: 999px; transition: width 320ms var(--ease); }
+.week-bar .notice { font-size: 12px; }
+
+.jd-pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-top: 12px; }
+.jd-pick {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  height: auto; padding: 14px; text-align: left;
+  border: 1px solid #e5eaf2; border-radius: var(--radius-md); background: #fff;
+}
+.jd-pick:hover { border-color: var(--color-secondary); box-shadow: var(--shadow-md); }
+.jd-pick b { font-size: 14px; }
+.jd-pick .jd-pick-title { font-size: 13px; color: var(--color-muted-foreground); }
