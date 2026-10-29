@@ -53,7 +53,18 @@ npm run dev        # 以后每次
 2. 软件右上角 **⚙ 齿轮** → 点「DeepSeek」快捷按钮 → 粘贴密钥 → 保存
 3. 点「测试连接」，出现"连接成功"即可使用全部 AI 功能
 
-> 密钥只存本机数据库；软件直连你选择的服务商（DeepSeek / Kimi / 智谱 / 通义 / Ollama）。
+| 服务商 | 协议 | Base URL | 模型示例 |
+|---|---|---|---|
+| DeepSeek | OpenAI 兼容 | https://api.deepseek.com | deepseek-chat |
+| Kimi | OpenAI 兼容 | https://api.moonshot.cn/v1 | moonshot-v1-8k |
+| 智谱 | OpenAI 兼容 | https://open.bigmodel.cn/api/paas/v4 | glm-4-flash |
+| 通义千问 | OpenAI 兼容 | https://dashscope.aliyuncs.com/compatible-mode/v1 | qwen-plus |
+| ChatGPT | OpenAI 兼容 | https://api.openai.com/v1 | gpt-4o-mini / gpt-4o |
+| Claude | **Anthropic 原生** | https://api.anthropic.com | claude-sonnet-4-5 |
+| OpenRouter | OpenAI 兼容 | https://openrouter.ai/api/v1 | anthropic/claude-sonnet-4.5 |
+| Ollama 本地 | OpenAI 兼容 | http://localhost:11434/v1 | qwen2.5:14b |
+
+> 密钥只存本机数据库；软件直连你选择的服务商。**Claude 要选「Anthropic 原生」协议**（点 Claude 快捷按钮会自动切换）；其余服务商都用「OpenAI 兼容」。
 
 ---
 

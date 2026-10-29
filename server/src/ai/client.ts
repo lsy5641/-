@@ -1,12 +1,24 @@
-import { Database, getSetting } from '../db';
+import { Database } from '../db';
+import { getSetting } from '../db';
 
-export interface AIConfig { baseUrl: string; apiKey: string; model: string; temperature: number }
+export type AIProtocol = 'openai' | 'anthropic';
+
+export interface AIConfig {
+  protocol: AIProtocol;
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+  temperature: number;
+}
+
 export interface ChatMsg { role: 'system' | 'user' | 'assistant'; content: string }
 
 export class AIError extends Error {}
 
 export function getAIConfig(db: Database): AIConfig {
+  const protocol = getSetting(db, 'ai.protocol', 'openai') === 'anthropic' ? 'anthropic' : 'openai';
   return {
+    protocol,
     baseUrl: getSetting(db, 'ai.baseUrl', 'https://api.deepseek.com'),
     apiKey: getSetting(db, 'ai.apiKey', ''),
     model: getSetting(db, 'ai.model', 'deepseek-chat'),
@@ -14,26 +26,70 @@ export function getAIConfig(db: Database): AIConfig {
   };
 }
 
-export async function chat(cfg: AIConfig, messages: ChatMsg[]): Promise<string> {
-  if (!cfg.apiKey) throw new AIError('尚未配置 API Key：点右上角齿轮⚙ 填入');
-  let res: Response;
-  try {
-    res = await fetch(cfg.baseUrl.replace(/\/+$/, '') + '/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${cfg.apiKey}` },
-      body: JSON.stringify({ model: cfg.model, temperature: cfg.temperature, messages, stream: false }),
-      signal: AbortSignal.timeout(120000),
-    });
-  } catch {
-    throw new AIError('无法连接 AI 服务，请检查联网状态与 Base URL');
-  }
-  if (res.status === 401 || res.status === 403) throw new AIError('API Key 无效或已过期（HTTP ' + res.status + '）');
-  if (res.status === 429) throw new AIError('触发限流或余额不足，稍后再试（HTTP 429）');
-  if (!res.ok) throw new AIError('AI 服务返回错误 HTTP ' + res.status);
+function openaiUrl(baseUrl: string): string {
+  return baseUrl.replace(/\/+$/, '') + '/chat/completions';
+}
+
+function anthropicUrl(baseUrl: string): string {
+  const base = baseUrl.replace(/\/+$/, '');
+  return (base.endsWith('/v1') ? base : base + '/v1') + '/messages';
+}
+
+function mapHttpError(status: number): AIError {
+  if (status === 401 || status === 403) return new AIError('API Key 无效或已过期（HTTP ' + status + '）');
+  if (status === 429) return new AIError('触发限流或余额不足，稍后再试（HTTP 429）');
+  return new AIError('AI 服务返回错误 HTTP ' + status);
+}
+
+async function chatOpenAI(cfg: AIConfig, messages: ChatMsg[]): Promise<string> {
+  const res = await fetch(openaiUrl(cfg.baseUrl), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${cfg.apiKey}` },
+    body: JSON.stringify({ model: cfg.model, temperature: cfg.temperature, messages, stream: false }),
+    signal: AbortSignal.timeout(120000),
+  });
+  if (!res.ok) throw mapHttpError(res.status);
   const j = await res.json() as { choices?: { message?: { content?: string } }[] };
   const content = j.choices?.[0]?.message?.content;
   if (typeof content !== 'string') throw new AIError('AI 返回结构异常');
   return content;
+}
+
+async function chatAnthropic(cfg: AIConfig, messages: ChatMsg[]): Promise<string> {
+  const system = messages.filter((m) => m.role === 'system').map((m) => m.content).join('\n\n');
+  const rest = messages.filter((m) => m.role !== 'system')
+    .map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }));
+  const res = await fetch(anthropicUrl(cfg.baseUrl), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': cfg.apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: cfg.model,
+      max_tokens: 4096,
+      temperature: cfg.temperature,
+      ...(system ? { system } : {}),
+      messages: rest,
+    }),
+    signal: AbortSignal.timeout(120000),
+  });
+  if (!res.ok) throw mapHttpError(res.status);
+  const j = await res.json() as { content?: { type?: string; text?: string }[] };
+  const text = (j.content ?? []).filter((c) => c.type === 'text' || typeof c.text === 'string').map((c) => c.text ?? '').join('');
+  if (!text) throw new AIError('AI 返回结构异常');
+  return text;
+}
+
+export async function chat(cfg: AIConfig, messages: ChatMsg[]): Promise<string> {
+  if (!cfg.apiKey) throw new AIError('尚未配置 API Key：点右上角齿轮⚙ 填入');
+  try {
+    return cfg.protocol === 'anthropic' ? await chatAnthropic(cfg, messages) : await chatOpenAI(cfg, messages);
+  } catch (e) {
+    if (e instanceof AIError) throw e;
+    throw new AIError('无法连接 AI 服务，请检查联网状态与 Base URL');
+  }
 }
 
 export function parseJsonLoose(text: string): unknown {
