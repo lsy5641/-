@@ -620,3 +620,18 @@ input, textarea, select { transition-duration: 220ms; }
 details.q { padding: 12px 2px; border-bottom: 1px solid #f1f5f9; }
 details.q:last-child { border-bottom: none; }
 details.q + details.q { margin-top: 4px; }
+
+/* 页脚 */
+.app-footer {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px 16px 40px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12.5px;
+  line-height: 1.9;
+}
+.app-footer p { margin: 2px 0; }
+.app-footer a { color: #64748b; text-decoration: none; border-bottom: 1px dashed #cbd5e1; }
+.app-footer a:hover { color: var(--color-secondary); border-bottom-color: var(--color-secondary); }
+@media print { .app-footer { display: none; } }

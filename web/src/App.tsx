@@ -62,6 +62,10 @@ export default function App() {
           {page === 'exam' && <ExamPage onNavigate={go} />}
         </div>
       </main>
+      <footer className="app-footer">
+        <p>design by：LIUTIAN</p>
+        <p>如软件在使用过程中有任何问题，欢迎联系：<a href="mailto:liutian641@163.com">liutian641@163.com</a>，进行问题反馈！</p>
+      </footer>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
   );
